@@ -28,10 +28,9 @@ def series_example():
     
     
 def episode_example():
-    url = "http://127.0.0.1:8000/rate/episode"
+    url = "http://127.0.0.1:8000/series/&%7C/episodes/Kassa/rate"
     payload = {
-        "name": "Rix Road",
-        "rating": 5
+        "score": 4
     }
     
     response = requests.post(url, json=payload)
@@ -41,6 +40,4 @@ def episode_example():
     
     
 if __name__ == "__main__":
-    movie_example()
-    series_example()
     episode_example()

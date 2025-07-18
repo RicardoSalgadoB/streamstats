@@ -1,9 +1,11 @@
+from time import time_ns
+
 from app.utils import (
     find_movie,
     find_episode,
     find_series
 )
-from time import time_ns
+
 
 def movie():
     t1 = time_ns()
@@ -23,5 +25,6 @@ def episode():
     t2 = time_ns()
     print(f"Finding Narkina 5 takes {(t2-t1)/1000:.0f} microseconds")
 
+
 if __name__ == "__main__":
-    episode()
+    movie()

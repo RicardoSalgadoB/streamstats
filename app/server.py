@@ -7,6 +7,7 @@ from app.utils import (
     show_series_by_genre,
     show_content_by_genre,
     show_eps_of_series,
+    find_content,
     find_movie,
     find_series,
     find_episode,
@@ -18,33 +19,29 @@ from app.utils import (
 from fastapi import FastAPI
 
 app = FastAPI()
-
-@app.get("/", name="index")
-def index():
-    return {
-        "/movies",
-        "/series",
-        "/content",
-        "/genres"
-    }
     
 app.get("/movies", name="show_movies")(show_movies)
+app.get("/movies/{name}", name="show_movies")(find_movie)
+
 app.get("/series", name="show_series")(show_series)
-app.get("/content", name="show_content")(show_all)
-app.get("/genres", name="genres")(show_genres)
-app.get("/movies/genre", name="show_movies_by_genre")\
-    (show_movies_by_genre)
-app.get("/series/genre", name="show_series_by_genre")\
-    (show_series_by_genre)
-app.get("/content/genre", name="show_content_by_genre")\
-    (show_content_by_genre)
+app.get("/series/{name}", name="show_series")(find_series)
 app.get("/series/{name}/episodes", name="show_episodes_of_series")\
     (show_eps_of_series)
-app.get("/movies/{name}", name="find_movie")(find_movie)
-app.get("/series/{name}", name="find_series")(find_series)
 app.get("/series/{series_name}/episodes/{name}", name="find_episodes")\
     (find_episode)
+
+app.get("/content", name="show_content")(show_all)
+app.get("/content/{name}", name="show_content")(find_content)
+
+app.get("/genres", name="show_genres")(show_genres)
+app.get("/genres/{name}/movies", name="show_movies_by_genre")\
+    (show_movies_by_genre)
+app.get("/genres/{name}/series", name="show_series_by_genre")\
+    (show_series_by_genre)
+app.get("/genres/{name}/content", name="show_content_by_genre")\
+    (show_content_by_genre)
     
-app.post("/rate/movie", name="rate a movie")(rate_movie)
-app.post("/rate/series", name="rate a series")(rate_series)
-app.post("/rate/episode", name="rate an episode")(rate_episode)
+app.post("/movies/{name}/rate", name="rate a movie")(rate_movie)
+app.post("/series/{name}/rate", name="rate a movie")(rate_series)
+app.post("/series/{series_name}/episodes/{name}/rate", name="rate a movie")\
+    (rate_episode)

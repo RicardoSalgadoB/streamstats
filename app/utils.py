@@ -1,4 +1,6 @@
 import os
+import json
+
 from typing import List, Union
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -6,42 +8,46 @@ from dotenv import load_dotenv
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from app.tables import Content, Movie, Episode, Serie, Genre
+from app.tables import Content, Movie, Episode, Serie, Genre, Rating
 
 load_dotenv()
 db_url = os.getenv("DB_URL")
 ENGINE = sa.create_engine(db_url)
 
 
-class Rating(BaseModel):
-    name: str
-    rating: int
+class RawRating(BaseModel):
+    score: int
 
-def show_movies() -> List[str]:
+
+def show_movies() -> List[dict]:
     stmt = sa.select(Movie)
     
     with orm.Session(ENGINE) as session:
         movies = session.scalars(stmt)
-        return [repr(m) for m in movies]
+        return [m.to_dict() for m in movies]
+    
             
-def show_series() -> List[str]:
+def show_series() -> List[dict]:
     stmt = sa.select(Serie)
     
     with orm.Session(ENGINE) as session:
         series = session.scalars(stmt)
-        return [repr(s) for s in series]
+        return [s.to_dict() for s in series]
+         
             
-def show_all() -> List[str]:
+def show_all() -> List[dict]:
     return show_movies() + show_series()
     
-def show_genres() -> List[str]:
+    
+def show_genres() -> List[dict]:
     stmt = sa.select(Genre)
     
     with orm.Session(ENGINE) as session:
         genres = session.scalars(stmt)
-        return [repr(g) for g in genres]
+        return [g.to_dict() for g in genres]
 
-def show_movies_by_genre(name: str) -> List[str]:
+
+def show_movies_by_genre(name: str) -> List[dict]:
     stmt = (
         sa.select(Content)
         .join(Genre.contents)
@@ -51,9 +57,10 @@ def show_movies_by_genre(name: str) -> List[str]:
     
     with orm.Session(ENGINE) as session:
         movies = session.scalars(stmt)
-        return [repr(m) for m in movies]
+        return [m.to_dict() for m in movies]
+          
             
-def show_series_by_genre(name: str) -> List[str]:
+def show_series_by_genre(name: str) -> List[dict]:
     stmt = (
         sa.select(Content)
         .join(Genre.contents)
@@ -63,92 +70,137 @@ def show_series_by_genre(name: str) -> List[str]:
     
     with orm.Session(ENGINE) as session:
         series = session.scalars(stmt)
-        return [repr(s) for s in series]
+        return [s.to_dict() for s in series]
             
-def show_content_by_genre(name: str) -> List[str]:
+            
+def show_content_by_genre(name: str) -> List[dict]:
     return show_movies_by_genre(name) + show_series_by_genre(name)
     
-def show_eps_of_series(name: str) -> Union[str, List[str]]:
+    
+def show_eps_of_series(name: str) -> Union[dict, List[dict]]:
     series_stmt = sa.select(Serie).where(Serie.name == name)
 
     with orm.Session(ENGINE) as session:
         series = session.scalar(series_stmt)
         if series:
-            return [repr(ep) for ep in series.episodes]
+            return [ep.to_dict() for ep in series.episodes]
         else:
-            return f"{name} is not a series"
+            return {
+                "message": f"{name} is not a series"
+            }
             
-def find_movie(name: str) -> str:
+
+def find_content(name: str) -> dict:
+    stmt = sa.select(Content).where(Content.name == name)
+    
+    with orm.Session(ENGINE) as session:
+        content = session.scalar(stmt)
+        if content:
+            return content.to_dict()
+        else:
+            return {
+                "message": f"{name} not found in Movies"
+            }
+    
+
+def find_movie(name: str) -> dict:
     stmt = sa.select(Movie).where(Movie.name == name)
     
     with orm.Session(ENGINE) as session:
         movie = session.scalar(stmt)
         if movie:
-            return repr(movie)
+            return movie.to_dict()
         else:
-            return f"{name} not found in movies"
+            return {
+                "message": f"{name} not found in movies"
+            }
             
-def find_series(name: str) -> str:
+            
+def find_series(name: str) -> dict:
     stmt = sa.select(Serie).where(Serie.name == name)
     
     with orm.Session(ENGINE) as session:
         series = session.scalar(stmt)
         if series:
-            return repr(series)
+            return series.to_dict()
         else:
-            return f"{name} not found in series"
+            return {
+                "message": f"{name} not found in series"
+            }
             
-def find_episode(name: str, series_name: str) -> str:
+            
+def find_episode(name: str, series_name: str) -> dict:
     stmt = sa.select(Episode).where(Episode.name == name)
     
     with orm.Session(ENGINE) as session:
         ep = session.scalar(stmt)
         if ep and ep.series.name == series_name:
-            return repr(ep)
+            return ep.to_dict()
         else:
-            return f'{name} not found in the episodes of series "{series_name}"'
+            return {
+                "messages": f"{name} not found in the episodes of the series: '{series_name}'"
+            }
         
-def rate_movie(r: Rating) -> str:
-    rating = r.rating
-    name = r.name
-    if rating > 5 or rating < 1:
-        return "Rating must be between 1 and 5"
-    stmt = sa.select(Movie).where(Movie.name == name)
+        
+def rate_movie(raw: RawRating, name: str) -> dict:
+    score = raw.score
+    if score > 5 or score < 1:
+        return {
+            "error": "Rating must be between 1 and 5"
+        }
+    rating = Rating(score=score)
+    
+    stmt = sa.select(Movie).where(Movie.name==name)
     
     with orm.Session(ENGINE) as session:
         movie = session.scalar(stmt)
-        movie.ratings_total += rating
-        movie.ratings_number += 1
+        movie.ratings.append(rating)
         session.commit()
         
-    return f"The movie {name} has been given a rating of {rating}"
+    return {
+        "message": "The movie {name} has been given a rating of {score}"
+    }
+
         
-def rate_series(r: Rating) -> str:
-    rating = r.rating
-    name = r.name
-    if rating > 5 or rating < 1:
-        return "Rating must be between 1 and 5"
-    stmt = sa.select(Serie).where(Serie.name == name)
+def rate_series(raw: RawRating, name: str) -> dict:
+    score = raw.score
+    if score > 5 or score < 1:
+        return {
+            "error": "Rating must be between 1 and 5"
+        }
+    rating = Rating(score=score)
+    
+    stmt = sa.select(Serie).where(Serie.name==name)
     
     with orm.Session(ENGINE) as session:
         series = session.scalar(stmt)
-        series.ratings_total += rating
-        series.ratings_number += 1
+        series.ratings.append(rating)
         session.commit()
         
-    return f"The series {name} has been given a rating of {rating}"
+    return {
+        "message": "The series {name} has been given a rating of {score}"
+    }
+
         
-def rate_episode(r: Rating) -> str:
-    rating = r.rating
-    name = r.name
-    if rating > 5 or rating < 1:
-        return "Rating must be between 1 and 5"
-    stmt = sa.select(Episode).where(Episode.name == name)
+def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
+    score = raw.score
+    if score > 5 or score < 1:
+        return {
+            "error": "Rating must be between 1 and 5"
+        }
+    rating = Rating(score=score)
+    stmt = sa.select(Episode).where(Episode.name==name)
     
     with orm.Session(ENGINE) as session:
         episode = session.scalar(stmt)
-        episode.ratings_total += rating
-        episode.ratings_number += 1
-        session.commit()
+        if episode.series.name == series_name:
+            episode.ratings.append(rating)
+            session.commit()
+        else:
+            return {
+                "message": f"The episode '{name}' is not in the series '{series_name}'"
+            }
         
-    return f"The episode {name} has been given a rating of {rating}"
+    return {
+        "message": "The episode {name} has been given a rating of {score}"
+    }
