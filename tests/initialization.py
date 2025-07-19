@@ -4,13 +4,13 @@ from time import time_ns
 import sqlalchemy as sa
 from dotenv import load_dotenv
 
-from app.tables import (
+from app.models import (
     Base,
     Genre,
     Content,
     Movie,
     Episode,
-    Serie,
+    Series,
     content_index
 )
 

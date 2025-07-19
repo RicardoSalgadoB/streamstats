@@ -23,6 +23,7 @@ def movies():
 
 def series():
     t1 = time_ns()
+    show_series()
     t2 = time_ns()
     print(f"Showing all series takes {(t2-t1)/1000:.0f} microseconds")
     

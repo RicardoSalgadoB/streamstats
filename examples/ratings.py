@@ -2,7 +2,7 @@ import requests
 
 
 def movie_example():
-    url = "http://127.0.0.1:8000/rate/movie"
+    url = "http://127.0.0.1:8000/movie/{name}/rate"
     payload = {
         "name": "Rouge One",
         "rating": 3
@@ -15,7 +15,7 @@ def movie_example():
     
     
 def series_example():
-    url = "http://127.0.0.1:8000/rate/series"
+    url = "http://127.0.0.1:8000/series/{name}/rate"
     payload = {
         "name": "The Bad Batch",
         "rating": 2

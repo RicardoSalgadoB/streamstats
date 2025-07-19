@@ -20,8 +20,8 @@ class Base(orm.DeclarativeBase):
 genre_content_junc = sa.Table(
     "genre_content_junc",
     Base.metadata,
-    sa.Column("content_id", sa.ForeignKey("content.id")),
-    sa.Column("genre_id", sa.ForeignKey("genre.id")),
+    sa.Column("content_id", sa.ForeignKey("content.id"), nullable=False),
+    sa.Column("genre_id", sa.ForeignKey("genre.id"), nullable=False),
 )
 
 
@@ -29,7 +29,7 @@ class Genre(Base):
     __tablename__ = "genre"
     
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    name: orm.Mapped[str] = orm.mapped_column(sa.String(30))
+    name: orm.Mapped[str] = orm.mapped_column(sa.String(30), nullable=False)
     
     contents: orm.Mapped[List[Content]] = orm.relationship(
         back_populates="genres",
@@ -50,8 +50,11 @@ class Rating(Base):
     __tablename__ = "rating"
     
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    score: orm.Mapped[int]
-    content_id: orm.Mapped[int] = orm.mapped_column(sa.ForeignKey("content.id"))
+    score: orm.Mapped[int] = orm.mapped_column(nullable=False)
+    content_id: orm.Mapped[int] = orm.mapped_column(
+        sa.ForeignKey("content.id"), 
+        nullable=False
+    )
     
     content: orm.Mapped[Content] = orm.relationship(back_populates="ratings")
     
@@ -70,8 +73,8 @@ class Content(Base):
     __tablename__ = "content"
     
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    name: orm.Mapped[str]
-    type: orm.Mapped[str]
+    name: orm.Mapped[str] = orm.mapped_column(nullable=False)
+    type: orm.Mapped[str] = orm.mapped_column(nullable=False)
     
     __mapper_args__ = {
         "polymorphic_identity": "content",
@@ -136,9 +139,9 @@ class Episode(Content):
         primary_key=True
     )
     duration: orm.Mapped[int] # in minutes
-    season: orm.Mapped[int]
-    series_id: orm.Mapped[int] = orm.mapped_column(sa.ForeignKey("serie.id"))
-    series: orm.Mapped[Serie] = orm.relationship(
+    season: orm.Mapped[int]  = orm.mapped_column(nullable=False)
+    series_id: orm.Mapped[int] = orm.mapped_column(sa.ForeignKey("series.id"))
+    series: orm.Mapped[Series] = orm.relationship(
         back_populates="episodes",
         foreign_keys=[series_id]
     )
@@ -157,8 +160,8 @@ class Episode(Content):
             "season": self.season
         }
 
-class Serie(Content):
-    __tablename__ = "serie"
+class Series(Content):
+    __tablename__ = "series"
     
     id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("content.id"), 

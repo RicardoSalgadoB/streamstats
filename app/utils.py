@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from app.tables import Content, Movie, Episode, Serie, Genre, Rating
+from app.models import Content, Movie, Episode, Series, Genre, Rating
 
 load_dotenv()
 db_url = os.getenv("DB_URL")
@@ -28,7 +28,7 @@ def show_movies() -> List[dict]:
     
             
 def show_series() -> List[dict]:
-    stmt = sa.select(Serie)
+    stmt = sa.select(Series)
     
     with orm.Session(ENGINE) as session:
         series = session.scalars(stmt)
@@ -78,7 +78,7 @@ def show_content_by_genre(name: str) -> List[dict]:
     
     
 def show_eps_of_series(name: str) -> Union[dict, List[dict]]:
-    series_stmt = sa.select(Serie).where(Serie.name == name)
+    series_stmt = sa.select(Series).where(Series.name == name)
 
     with orm.Session(ENGINE) as session:
         series = session.scalar(series_stmt)
@@ -117,7 +117,7 @@ def find_movie(name: str) -> dict:
             
             
 def find_series(name: str) -> dict:
-    stmt = sa.select(Serie).where(Serie.name == name)
+    stmt = sa.select(Series).where(Series.name == name)
     
     with orm.Session(ENGINE) as session:
         series = session.scalar(stmt)
@@ -170,7 +170,7 @@ def rate_series(raw: RawRating, name: str) -> dict:
         }
     rating = Rating(score=score)
     
-    stmt = sa.select(Serie).where(Serie.name==name)
+    stmt = sa.select(Series).where(Series.name==name)
     
     with orm.Session(ENGINE) as session:
         series = session.scalar(stmt)

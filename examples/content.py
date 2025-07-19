@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from app.tables import Movie, Episode, Serie, Genre
+from app.models import Movie, Episode, Series, Genre
 
 load_dotenv()
 db_url = os.getenv("DB_URL")
@@ -34,9 +34,9 @@ def Star_Wars():
     ep6= Movie(name="Episode 6: The Return of the Jedi", duration=127)
     
     # Series
-    andor = Serie(name="&|")
-    mandalorian = Serie(name="The Mandalorian")
-    bad_batch = Serie(name="The Bad Batch")
+    andor = Series(name="&|")
+    mandalorian = Series(name="The Mandalorian")
+    bad_batch = Series(name="The Bad Batch")
     
     # Add Episodes to Series
         # Andor
