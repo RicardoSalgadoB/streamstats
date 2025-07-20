@@ -17,6 +17,28 @@ ENGINE = sa.create_engine(db_url)
 
 class RawRating(BaseModel):
     score: int
+    
+    
+class RawMovie(BaseModel):
+    name: str
+    duration: int
+    genres: List[str]
+    
+    
+class RawSeries(BaseModel):
+    name: str
+    genres: List[str]
+    
+    
+class RawEpisode(BaseModel):
+    name: str
+    duration: int
+    season: int
+    genres: List[str]
+    
+
+class RawGenre(BaseModel):
+    name: str
 
 
 def show_movies(page: int = 1, size: int = 20) -> List[dict]:
@@ -56,12 +78,15 @@ def show_genres() -> List[dict]:
         return [g.to_dict() for g in genres]
 
 
-def show_movies_by_genre(name: str) -> List[dict]:
+def show_movies_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]:
+    offset = (page - 1) * size
     stmt = (
         sa.select(Content)
         .join(Genre.contents)
         .where(sa.and_(Genre.name == name, Content.type == "movie"))
         .order_by(Content.id)
+        .offset(offset)
+        .limit(size)
     )
     
     with orm.Session(ENGINE) as session:
@@ -69,12 +94,15 @@ def show_movies_by_genre(name: str) -> List[dict]:
         return [m.to_dict() for m in movies]
           
             
-def show_series_by_genre(name: str) -> List[dict]:
+def show_series_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]:
+    offset = (page - 1) * size
     stmt = (
         sa.select(Content)
         .join(Genre.contents)
         .where(sa.and_(Genre.name == name, Content.type == "serie"))
         .order_by(Content.id)
+        .offset(offset)
+        .limit(size)
     )
     
     with orm.Session(ENGINE) as session:
@@ -82,22 +110,37 @@ def show_series_by_genre(name: str) -> List[dict]:
         return [s.to_dict() for s in series]
             
             
-def show_content_by_genre(name: str) -> List[dict]:
-    return show_movies_by_genre(name) + show_series_by_genre(name)
+def show_content_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]:
+    offset = (page - 1) * size
+    stmt = (
+        sa.select(Content)
+        .join(Genre.contents)
+        .where(sa.and_(
+            sa.or_(Content.type=='movie', Content.type=='series'),
+            Genre.name == name
+        ))
+        .offset(offset)
+        .limit(size)
+    )
+    with orm.Session(ENGINE) as session:
+        contents = session.scalars(stmt)
+        return [c.to_dict() for c in contents]
     
     
-def show_eps_of_series(name: str) -> Union[dict, List[dict]]:
+def show_eps_of_series(name: str, season: int = 0) -> Union[dict, List[dict]]:
     series_stmt = sa.select(Series).where(Series.name == name)
 
     with orm.Session(ENGINE) as session:
         series = session.scalar(series_stmt)
-        if series:
+        if series and season == 0:
             return [ep.to_dict() for ep in series.episodes]
+        elif series and season != 0:
+            return [ep.to_dict() for ep in series.episodes if ep.season == season]
         else:
             return {
                 "message": f"'{name}' is not a series"
             }
-            
+      
 
 def find_content(name: str) -> dict:
     stmt = sa.select(Content).where(Content.name == name)
@@ -213,3 +256,72 @@ def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
     return {
         "message": f"The episode '{name}' has been given a rating of {score}"
     }
+    
+def add_movie(raw: RawMovie):
+    m = Movie(name=raw.name, duration=raw.duration)
+    gnr_stmt = sa.select(Genre).filter(Genre.name.in_(raw.genres))
+    
+    with orm.Session(ENGINE) as session:
+        genres = session.scalars(gnr_stmt)
+        if genres:
+            m.genres.extend(genres)
+        else:
+            message = f"Genres '{genres}' not found. Adding movie '{raw.name}' anyway"
+        session.add(m)
+        session.commit()
+        
+    if not message:
+        return {"message": f"The movie '{raw.name}' has been added"}
+    else:
+        return {"message": message}
+    
+    
+def add_series(raw: RawSeries):
+    s = Series(name=raw.name)
+    gnr_stmt = sa.select(Genre).filter(Genre.name.in_(raw.genres))
+    
+    with orm.Session(ENGINE) as session:
+        genres = session.scalars(gnr_stmt)
+        if genres:
+            s.genres.extend(genres)
+        else:
+            message = f"Genres '{genres}' not found. Adding series '{raw.name}' anyway"
+        session.add(s)
+        session.commit()
+        
+    if not message:
+        return {"message": f"The series '{raw.name}' has been added"}
+    else:
+        return {"message": message}
+    
+    
+def add_episode(raw: RawEpisode, series_name: str):
+    ep = Episode(name=raw.name, duration=raw.duration, season=raw.season)
+    series_stmt = (
+        sa.select(Series)
+        .where(Series.name == series_name)
+        .order_by(Series.id)
+        .limit(1)
+    )
+    
+    with orm.Session(ENGINE) as session:
+        s = session.scalar(series_stmt)
+        if s:
+            ep.genres = s.genres
+            s.episodes.append(ep)
+            session.commit()
+        else:
+            return {"message": f"The series '{series_name}' wasn't found"}
+        
+    return {
+        "message": f"The episode '{raw.name}' has been added to '{series_name}'"
+    }
+    
+
+def add_genre(raw: RawGenre):
+    g = Genre(name=raw.name)
+    with orm.Session(ENGINE) as session:
+        session.add(g)
+        session.commit()
+        
+    return {"message": f"The genre '{raw.name}' has been added"}

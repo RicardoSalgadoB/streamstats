@@ -18,11 +18,13 @@ def _(environment, **kwargs):
         
 
 class WebsiteUser(HttpUser):
-    wait_time = between(1, 10)
+    wait_time = between(1, 2.5)
     
     @task(1)
     def get_all_movies(self):
-        self.client.get(f"/movies")
+        size = random.randint(5, 100)
+        page = random.randint(1, 5000//size)
+        self.client.get(f"/movies?page={page}&size={size}")
         
     @task(10)
     def get_movie(self):
