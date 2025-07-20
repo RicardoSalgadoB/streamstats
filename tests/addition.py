@@ -1,4 +1,4 @@
-from examples.content import Star_Wars
+from examples.star_wars import Star_Wars
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from time import time_ns
