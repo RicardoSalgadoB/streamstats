@@ -1,7 +1,7 @@
 import os
 import json
 
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -25,9 +25,20 @@ class RawMovie(BaseModel):
     genres: List[str]
     
     
+class UpdateMovie(BaseModel):
+    name: Optional[str]
+    duration: Optional[int]
+    genres: Optional[List[str]]
+    
+    
 class RawSeries(BaseModel):
     name: str
     genres: List[str]
+    
+    
+class UpdateSeries(BaseModel):
+    name: Optional[str]
+    genres: Optional[List[str]]
     
     
 class RawEpisode(BaseModel):
@@ -35,6 +46,13 @@ class RawEpisode(BaseModel):
     duration: int
     season: int
     genres: List[str]
+    
+    
+class UpdateEpisode(BaseModel):
+    name: Optional[str]
+    duration: Optional[int]
+    season: Optional[int]
+    genres: Optional[List[str]]
     
 
 class RawGenre(BaseModel):
@@ -325,3 +343,134 @@ def add_genre(raw: RawGenre):
         session.commit()
         
     return {"message": f"The genre '{raw.name}' has been added"}
+    
+
+def remove_movie(name: str) -> dict:
+    stmt = sa.select(Movie).where(Movie.name == name)
+    
+    with orm.Session(ENGINE) as session:
+        movie = session.scalar(stmt)
+        if movie:
+            sa.delete(movie)
+        else:
+            return {
+                "message": f"'{name}' not found in movies"
+            }
+            
+    return {"message": f"Movie '{name}' has been deleted"}
+            
+            
+def remove_series(name: str) -> dict:
+    stmt = sa.select(Series).where(Series.name == name)
+    
+    with orm.Session(ENGINE) as session:
+        series = session.scalar(stmt)
+        if series:
+            sa.delete(series)
+        else:
+            return {
+                "message": f"'{name}' not found in series"
+            }
+            
+    return {"message": f"Series '{name}' has been deleted"}
+            
+            
+def remove_episode(name: str, series_name: str) -> dict:
+    stmt = sa.select(Episode).where(Episode.name == name)
+    
+    with orm.Session(ENGINE) as session:
+        ep = session.scalar(stmt)
+        if ep and ep.series.name == series_name:
+            sa.delete(ep)
+        else:
+            return {
+                "messages": f"'{name}' not found in the episodes of the series: '{series_name}'"
+            }
+            
+    return {
+        "message": f"Episode '{name}' has beend deleted from series '{series_name}'"
+    }
+    
+    
+def remove_genre(name: str) -> dict:
+    stmt = sa.select(Genre).where(Genre.name == name)
+    
+    with orm.Session(ENGINE) as session:
+        g = session.scalar(stmt)
+        if g:
+            sa.delete(g)
+        else:
+            return {
+                "messages": f"'{name}' not found in the catalog genres"
+            }
+            
+    return {"message": f"Genre '{name}' has been deleted"}
+
+
+def update_movie(name: str, raw: UpdateMovie) -> dict:
+    stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id).limit(1)
+    
+    with orm.Session(ENGINE) as session:
+        m = session.scalar(stmt)
+        if m:
+            update_data = raw.model_dump(exclude_unset=True)
+            for key, value in update_data:
+                setattr(m, key, value)
+            session.commit()
+        else:
+            return {"message": f"Movie '{name}' not found"}
+        
+    return {"message": f"Movie '{name}' has been updated"}
+
+
+def update_series(name: str, raw: UpdateSeries) -> dict:
+    stmt = sa.select(Series).where(Series.name == name).order_by(Series.id).limit(1)
+    
+    with orm.Session(ENGINE) as session:
+        s = session.scalar(stmt)
+        if s:
+            update_data = raw.model_dump(exclude_unset=True)
+            for key, value in update_data:
+                setattr(s, key, value)
+            session.commit()
+        else:
+            return {"message": f"Series '{name}' not found"}
+        
+    return {"message": f"Series '{name}' has been updated"}
+
+
+def update_episode(series_name: str, name: str, raw: RawGenre) -> dict:
+    stmt = (
+        sa.select(Episode)
+        .where(sa.and_(Episode.name == name, Episode.series.name == series_name))
+        .order_by(Series.id)
+        .limit(1)
+    )
+    
+    with orm.Session(ENGINE) as session:
+        ep = session.scalar(stmt)
+        if ep:
+            update_data = raw.model_dump(exclude_unset=True)
+            for key, value in update_data:
+                setattr(ep, key, value)
+            session.commit()
+        else:
+            return {"message": f"Episode '{name}' not found in series '{series_name}'"}
+
+    return {"message": f"Episode '{name}' in series '{series_name}' has been updated"}
+
+
+def update_genre(name: str, raw: UpdateEpisode) -> dict:
+    stmt = sa.select(Genre).where(Genre.name == name).order_by(Series.id).limit(1)
+    
+    with orm.Session(ENGINE) as session:
+        g = session.scalar(stmt)
+        if g:
+            update_data = raw.model_dump(exclude_unset=True)
+            for key, value in update_data:
+                setattr(g, key, value)
+            session.commit()
+        else:
+            return {"message": f"Genre '{name}' not found"}
+        
+    return {"message": f"Genre '{name}' has been updated"}

@@ -18,6 +18,14 @@ from app.utils import (
     add_series,
     add_episode,
     add_genre,
+    remove_movie,
+    remove_series,
+    remove_episode,
+    remove_genre,
+    update_movie,
+    update_series,
+    update_episode,
+    update_genre,
     Rating
 )
 from fastapi import FastAPI
@@ -61,3 +69,16 @@ app.post("/series/add", name="add a series")(add_series)
 app.post("/series/{series_name}/episodes/add", name="add an episode")\
     (add_episode)
 app.post("/genres/add", name="add a genre")(add_genre)
+
+# Delete content methods
+app.delete("/movies/{name}", name="remove a movie")(remove_movie)
+app.delete("/series/{name}", name="remove a series")(remove_series)
+app.delete("/series/{series_name}/episodes/{name}", name="remove an episode")\
+    (remove_episode)
+app.delete("/genres/{name}", name="remove a genre")(remove_genre)
+
+# Update content
+app.patch("/movies/{name}", name="update a movie")
+app.patch("/series/{name}", name="update a series")
+app.patch("/series/{series_name}/episode/{name}", name="update an episode")
+app.patch("/genres/{name}", name="update a genre")
