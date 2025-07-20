@@ -86,7 +86,7 @@ def show_eps_of_series(name: str) -> Union[dict, List[dict]]:
             return [ep.to_dict() for ep in series.episodes]
         else:
             return {
-                "message": f"{name} is not a series"
+                "message": f"'{name}' is not a series"
             }
             
 
@@ -99,7 +99,7 @@ def find_content(name: str) -> dict:
             return content.to_dict()
         else:
             return {
-                "message": f"{name} not found in Movies"
+                "message": f"'{name}' not found in Movies"
             }
     
 
@@ -112,7 +112,7 @@ def find_movie(name: str) -> dict:
             return movie.to_dict()
         else:
             return {
-                "message": f"{name} not found in movies"
+                "message": f"'{name}' not found in movies"
             }
             
             
@@ -125,7 +125,7 @@ def find_series(name: str) -> dict:
             return series.to_dict()
         else:
             return {
-                "message": f"{name} not found in series"
+                "message": f"'{name}' not found in series"
             }
             
             
@@ -138,7 +138,7 @@ def find_episode(name: str, series_name: str) -> dict:
             return ep.to_dict()
         else:
             return {
-                "messages": f"{name} not found in the episodes of the series: '{series_name}'"
+                "messages": f"'{name}' not found in the episodes of the series: '{series_name}'"
             }
         
         
@@ -158,7 +158,7 @@ def rate_movie(raw: RawRating, name: str) -> dict:
         session.commit()
         
     return {
-        "message": "The movie {name} has been given a rating of {score}"
+        "message": f"The movie '{name}' has been given a rating of {score}"
     }
 
         
@@ -178,7 +178,7 @@ def rate_series(raw: RawRating, name: str) -> dict:
         session.commit()
         
     return {
-        "message": "The series {name} has been given a rating of {score}"
+        "message": f"The series '{name}' has been given a rating of {score}"
     }
 
         
@@ -202,5 +202,5 @@ def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
             }
         
     return {
-        "message": "The episode {name} has been given a rating of {score}"
+        "message": f"The episode '{name}' has been given a rating of {score}"
     }
