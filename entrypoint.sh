@@ -20,7 +20,7 @@ if [[ -z "$TABLE_COUNT" ]]; then
 elif (( TABLE_COUNT == 0 )); then
   echo "Database '${DB_NAME}' is empty. Running schema and data initialization"
   python -m app.models
-  python -m examples.star_wars
+  python -m examples.fake_content
 else
   echo "Database '${DB_NAME}' already has ${TABLE_COUNT} relations. Skipping initialization."
 fi
