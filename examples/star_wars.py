@@ -1,5 +1,4 @@
 import os
-from time import time
 
 from dotenv import load_dotenv
 import sqlalchemy as sa
@@ -181,8 +180,4 @@ def Star_Wars():
     
 
 if __name__ == "__main__":
-    t1 = time()
     Star_Wars()
-    t2 = time()
-    
-    print(f"{t2 - t1} seconds")

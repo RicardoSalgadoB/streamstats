@@ -9,15 +9,15 @@ from app.utils import (
 
 def movie():
     t1 = time_ns()
-    find_movie("Episode 5: The Empire strikes back")
+    find_movie("The Cut of Deborah Roberts")
     t2 = time_ns()
-    print(f"Finding Episode 5 takes {(t2-t1)/1000:.0f} microseconds")
+    print(f"Finding The Cut of Deborah Roberts takes {(t2-t1)/1000:.0f} microseconds")
     
 def series():
     t1 = time_ns()
-    find_series("The Bad Batch")
+    find_series("Large Test")
     t2 = time_ns()
-    print(f"Finding The Bad Batch takes {(t2-t1)/1000:.0f} microseconds")
+    print(f"Finding Large Test takes {(t2-t1)/1000:.0f} microseconds")
     
 def episode():
     t1 = time_ns()
