@@ -12,6 +12,7 @@ def add_movie():
     
     print(response.status_code)
     print(response.json())
+    return response.status_code
     
     
 def add_series():
@@ -25,6 +26,7 @@ def add_series():
     
     print(response.status_code)
     print(response.json())
+    return response.status_code
     
     
 def add_episode():
@@ -40,6 +42,7 @@ def add_episode():
     
     print(response.status_code)
     print(response.json())
+    return response.status_code
     
     
 def add_genre():
@@ -52,6 +55,7 @@ def add_genre():
     
     print(response.status_code)
     print(response.json())
+    return response.status_code
 
     
 if __name__ == '__main__':

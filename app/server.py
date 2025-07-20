@@ -11,6 +11,7 @@ from app.utils import (
     find_movie,
     find_series,
     find_episode,
+    find_genre,
     rate_movie,
     rate_series,
     rate_episode,
@@ -38,7 +39,7 @@ app.get("/movies/{name}", name="show_movies")(find_movie)
 
 # Series methods
 app.get("/series", name="show_series")(show_series)
-app.get("/series/{name}", name="show_series")(find_series)
+app.get("/series/{name}", name="find_series")(find_series)
 app.get("/series/{name}/episodes", name="show_episodes_of_series")\
     (show_eps_of_series)
 app.get("/series/{series_name}/episodes/{name}", name="find_episodes")\
@@ -50,6 +51,7 @@ app.get("/content/{name}", name="show_content")(find_content)
 
 # Genre methods
 app.get("/genres", name="show_genres")(show_genres)
+app.get("/genres/{name}", name="find_genre")(find_genre)
 app.get("/genres/{name}/movies", name="show_movies_by_genre")\
     (show_movies_by_genre)
 app.get("/genres/{name}/series", name="show_series_by_genre")\
@@ -78,7 +80,8 @@ app.delete("/series/{series_name}/episodes/{name}", name="remove an episode")\
 app.delete("/genres/{name}", name="remove a genre")(remove_genre)
 
 # Update content
-app.patch("/movies/{name}", name="update a movie")
-app.patch("/series/{name}", name="update a series")
-app.patch("/series/{series_name}/episode/{name}", name="update an episode")
-app.patch("/genres/{name}", name="update a genre")
+app.patch("/movies/{name}", name="update a movie")(update_movie)
+app.patch("/series/{name}", name="update a series")(update_series)
+app.patch("/series/{series_name}/episodes/{name}", name="update an episode")\
+    (update_episode)
+app.patch("/genres/{name}", name="update a genre")(update_genre)

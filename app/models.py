@@ -29,7 +29,11 @@ class Genre(Base):
     __tablename__ = "genre"
     
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    name: orm.Mapped[str] = orm.mapped_column(sa.String(30), nullable=False)
+    name: orm.Mapped[str] = orm.mapped_column(
+        sa.String(30), 
+        nullable=False, 
+        unique=True
+    )
     
     contents: orm.Mapped[List[Content]] = orm.relationship(
         back_populates="genres",

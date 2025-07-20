@@ -41,9 +41,19 @@ Since the semester ended, I've not had the chance to work on this project, but u
 ## API Endpoints
 
 ## Database Schemas
+The application's data is stored in a PostgreSQL 16 Database configured with the following schemas:
 
+- **`content` table**: Stores metadata for attributes shared between movies, series and episodes.
+- **`movie` table**: Extends `content` for movie specific information (only its ID in this application).
+- **`series` table**: Extends `content` for series specific information.
+- **`episode` table**: Extends `content` for episode specific information, linked to `series`.
+- **`genre` table**: Store genre category information.
+- **`genre_content_junc` table**: Junction table for many-to-many relationship between `genre` and `content`.
+- **`rating` table**: Stores user ratings for specific content,
 
-## Testing & Performance
+## Testing
+
+## Performance
 
 AVERAGE RESPONSE FOR SINGLE MOVIE
 20 ms

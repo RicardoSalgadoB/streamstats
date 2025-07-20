@@ -26,9 +26,9 @@ class RawMovie(BaseModel):
     
     
 class UpdateMovie(BaseModel):
-    name: Optional[str]
-    duration: Optional[int]
-    genres: Optional[List[str]]
+    name: Optional[str] = None
+    duration: Optional[int] = None
+    genres: Optional[List[str]] = None
     
     
 class RawSeries(BaseModel):
@@ -37,8 +37,8 @@ class RawSeries(BaseModel):
     
     
 class UpdateSeries(BaseModel):
-    name: Optional[str]
-    genres: Optional[List[str]]
+    name: Optional[str] = None
+    genres: Optional[List[str]] = None
     
     
 class RawEpisode(BaseModel):
@@ -49,10 +49,10 @@ class RawEpisode(BaseModel):
     
     
 class UpdateEpisode(BaseModel):
-    name: Optional[str]
-    duration: Optional[int]
-    season: Optional[int]
-    genres: Optional[List[str]]
+    name: Optional[str] = None
+    duration: Optional[int] = None
+    season: Optional[int] = None
+    genres: Optional[List[str]] = None
     
 
 class RawGenre(BaseModel):
@@ -210,6 +210,17 @@ def find_episode(name: str, series_name: str) -> dict:
             return {
                 "messages": f"'{name}' not found in the episodes of the series: '{series_name}'"
             }
+            
+            
+def find_genre(name: str) -> dict:
+    stmt = sa.select(Genre).where(Genre.name == name)
+    
+    with orm.Session(ENGINE) as session:
+        g = session.scalar(stmt)
+        if g:
+            return g.to_dict()
+        else:
+            return {"messages": f"Genre '{name}' not found"}
         
         
 def rate_movie(raw: RawRating, name: str) -> dict:
@@ -278,6 +289,7 @@ def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
 def add_movie(raw: RawMovie):
     m = Movie(name=raw.name, duration=raw.duration)
     gnr_stmt = sa.select(Genre).filter(Genre.name.in_(raw.genres))
+    message = ""
     
     with orm.Session(ENGINE) as session:
         genres = session.scalars(gnr_stmt)
@@ -297,6 +309,7 @@ def add_movie(raw: RawMovie):
 def add_series(raw: RawSeries):
     s = Series(name=raw.name)
     gnr_stmt = sa.select(Genre).filter(Genre.name.in_(raw.genres))
+    message = ""
     
     with orm.Session(ENGINE) as session:
         genres = session.scalars(gnr_stmt)
@@ -346,12 +359,13 @@ def add_genre(raw: RawGenre):
     
 
 def remove_movie(name: str) -> dict:
-    stmt = sa.select(Movie).where(Movie.name == name)
+    stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id).limit(1)
     
     with orm.Session(ENGINE) as session:
         movie = session.scalar(stmt)
         if movie:
-            sa.delete(movie)
+            session.delete(movie)
+            session.commit()
         else:
             return {
                 "message": f"'{name}' not found in movies"
@@ -361,12 +375,13 @@ def remove_movie(name: str) -> dict:
             
             
 def remove_series(name: str) -> dict:
-    stmt = sa.select(Series).where(Series.name == name)
+    stmt = sa.select(Series).where(Series.name == name).order_by(Series.id).limit(1)
     
     with orm.Session(ENGINE) as session:
         series = session.scalar(stmt)
         if series:
-            sa.delete(series)
+            session.delete(series)
+            session.commit()
         else:
             return {
                 "message": f"'{name}' not found in series"
@@ -376,12 +391,13 @@ def remove_series(name: str) -> dict:
             
             
 def remove_episode(name: str, series_name: str) -> dict:
-    stmt = sa.select(Episode).where(Episode.name == name)
+    stmt = sa.select(Episode).where(Episode.name == name).order_by(Episode.id).limit(1)
     
     with orm.Session(ENGINE) as session:
         ep = session.scalar(stmt)
         if ep and ep.series.name == series_name:
-            sa.delete(ep)
+            session.delete(ep)
+            session.commit()
         else:
             return {
                 "messages": f"'{name}' not found in the episodes of the series: '{series_name}'"
@@ -393,12 +409,13 @@ def remove_episode(name: str, series_name: str) -> dict:
     
     
 def remove_genre(name: str) -> dict:
-    stmt = sa.select(Genre).where(Genre.name == name)
+    stmt = sa.select(Genre).where(Genre.name == name).order_by(Genre.id).limit(1)
     
     with orm.Session(ENGINE) as session:
         g = session.scalar(stmt)
         if g:
-            sa.delete(g)
+            session.delete(g)
+            session.commit()
         else:
             return {
                 "messages": f"'{name}' not found in the catalog genres"
@@ -414,7 +431,7 @@ def update_movie(name: str, raw: UpdateMovie) -> dict:
         m = session.scalar(stmt)
         if m:
             update_data = raw.model_dump(exclude_unset=True)
-            for key, value in update_data:
+            for key, value in update_data.items():
                 setattr(m, key, value)
             session.commit()
         else:
@@ -430,7 +447,7 @@ def update_series(name: str, raw: UpdateSeries) -> dict:
         s = session.scalar(stmt)
         if s:
             update_data = raw.model_dump(exclude_unset=True)
-            for key, value in update_data:
+            for key, value in update_data.items():
                 setattr(s, key, value)
             session.commit()
         else:
@@ -439,19 +456,19 @@ def update_series(name: str, raw: UpdateSeries) -> dict:
     return {"message": f"Series '{name}' has been updated"}
 
 
-def update_episode(series_name: str, name: str, raw: RawGenre) -> dict:
+def update_episode(series_name: str, name: str, raw: UpdateEpisode) -> dict:
     stmt = (
         sa.select(Episode)
-        .where(sa.and_(Episode.name == name, Episode.series.name == series_name))
-        .order_by(Series.id)
+        .where(Episode.name == name)
+        .order_by(Episode.id)
         .limit(1)
     )
     
     with orm.Session(ENGINE) as session:
         ep = session.scalar(stmt)
-        if ep:
+        if ep and ep.series.name == series_name:
             update_data = raw.model_dump(exclude_unset=True)
-            for key, value in update_data:
+            for key, value in update_data.items():
                 setattr(ep, key, value)
             session.commit()
         else:
@@ -460,14 +477,14 @@ def update_episode(series_name: str, name: str, raw: RawGenre) -> dict:
     return {"message": f"Episode '{name}' in series '{series_name}' has been updated"}
 
 
-def update_genre(name: str, raw: UpdateEpisode) -> dict:
-    stmt = sa.select(Genre).where(Genre.name == name).order_by(Series.id).limit(1)
+def update_genre(name: str, raw: RawGenre) -> dict:
+    stmt = sa.select(Genre).where(Genre.name == name).order_by(Genre.id).limit(1)
     
     with orm.Session(ENGINE) as session:
         g = session.scalar(stmt)
         if g:
             update_data = raw.model_dump(exclude_unset=True)
-            for key, value in update_data:
+            for key, value in update_data.items():
                 setattr(g, key, value)
             session.commit()
         else:
