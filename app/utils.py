@@ -19,24 +19,33 @@ class RawRating(BaseModel):
     score: int
 
 
-def show_movies() -> List[dict]:
-    stmt = sa.select(Movie)
-    
+def show_movies(page: int = 1, size: int = 20) -> List[dict]:
+    offset = (page - 1) * size
+    stmt = sa.select(Movie).offset(offset).limit(size)
     with orm.Session(ENGINE) as session:
         movies = session.scalars(stmt)
         return [m.to_dict() for m in movies]
     
             
-def show_series() -> List[dict]:
-    stmt = sa.select(Series)
-    
+def show_series(page: int = 1, size: int = 20) -> List[dict]:
+    offset = (page - 1) * size
+    stmt = sa.select(Series).offset(offset).limit(size)
     with orm.Session(ENGINE) as session:
         series = session.scalars(stmt)
         return [s.to_dict() for s in series]
          
             
-def show_all() -> List[dict]:
-    return show_movies() + show_series()
+def show_all(page: int, size: int = 20) -> List[dict]:
+    offset = (page - 1) * size
+    stmt = (
+        sa.select(Content)
+        .where(sa.or_(Content.type=='movie', Content.type=='series'))
+        .offset(offset)
+        .limit(size)
+    )
+    with orm.Session(ENGINE) as session:
+        contents = session.scalars(stmt)
+        return [c.to_dict() for c in contents]
     
     
 def show_genres() -> List[dict]:

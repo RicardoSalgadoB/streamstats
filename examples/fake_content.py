@@ -45,11 +45,17 @@ def generate_genres() -> List[Genre]:
 
 def generate_movies() -> List[Movie]:
     movies = []
+    names =[]
     for _ in range(5000):
+        n = generate_fake_title()
+        names.append(n)
         movies.append(Movie(
-            name=generate_fake_title(), 
+            name=n, 
             duration=random.randint(100, 240)
         ))
+        with open('names/movie_names.txt', 'w') as f:
+            for n in names:
+                f.write(n + '\n')
     return movies
 
 
