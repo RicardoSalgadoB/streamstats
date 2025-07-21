@@ -387,9 +387,7 @@ def rate_movie(raw: RawRating, name: str) -> dict:
     """
     score = raw.score
     if score > 5 or score < 1:
-        return {
-            "error": "Rating must be between 1 and 5"
-        }
+        raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
     rating = Rating(score=score)
     
     stmt = sa.select(Movie).where(Movie.name==name).order_by(Movie.id).limit(1)
@@ -420,9 +418,7 @@ def rate_series(raw: RawRating, name: str) -> dict:
     """
     score = raw.score
     if score > 5 or score < 1:
-        return {
-            "error": "Rating must be between 1 and 5"
-        }
+        raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
     rating = Rating(score=score)
     
     stmt = sa.select(Series).where(Series.name==name)
@@ -453,9 +449,7 @@ def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
     """
     score = raw.score
     if score > 5 or score < 1:
-        return {
-            "error": "Rating must be between 1 and 5"
-        }
+        raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
     rating = Rating(score=score)
     stmt = sa.select(Episode).where(Episode.name==name)
     
@@ -552,8 +546,8 @@ def add_episode(raw: RawEpisode, series_name: str) -> dict:
     with orm.Session(ENGINE) as session:
         s = session.scalar(series_stmt)
         if s:
-            ep.genres = s.genres
             s.episodes.append(ep)
+            ep.genres = s.genres
             session.commit()
         else:
             raise HTTPException(status_code=404, detail=f"The series '{series_name}' wasn't found")

@@ -64,10 +64,10 @@ def generate_movies(num: int = 5000) -> List[Movie]:
             name=n, 
             duration=random.randint(100, 240)
         ))
-            # store the names of the movies in a file for finds during testing
-        with open('names/movie_names.txt', 'w') as f:
-            for n in names:
-                f.write(n + '\n')
+            # store the names of the movies in a file for finds during testing. Not needed for Docker.
+        #with open('names/movie_names.txt', 'w') as f:
+        #    for n in names:
+        #        f.write(n + '\n')
     return movies   # return the list of objects
 
 
@@ -96,9 +96,9 @@ def generate_episodes(series: List[Series], series_names: dict[str, List[str]], 
         ))
         series_names[s.name].append(ep_name)    # Add the episode to the list of its respective entry
     
-    # Once the series-episodes dictinary is comlete, store it on a json file for testing purposes.
-    with open("names/series.json", "w") as f:
-        json.dump(series_names, f)
+    # Once the series-episodes dictinary is comlete, store it on a json file for testing purposes. Not needed for Docker.
+    #with open("names/series.json", "w") as f:
+    #    json.dump(series_names, f)
         
         
 def embed_genres(

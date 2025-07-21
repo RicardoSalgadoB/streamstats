@@ -105,6 +105,7 @@ class WebsiteUser(HttpUser):
         payload = {
             "name": generate_fake_title(),
             "duration": random.randint(6, 150),
+            "season": random.randint(1, 10),
             "genres": list(gnr_set)
         }
         self.client.post(f"/series/{series}/episodes", json=payload)

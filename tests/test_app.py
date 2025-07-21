@@ -48,20 +48,6 @@ def test_add_genre():
     assert add_genre() == 201
     
     
-# SELECT CONTENT
-def test_select_movie():
-    assert select_movie() == 200
-    
-def test_select_series():
-    assert select_series() == 200
-    
-def test_select_episode():
-    assert select_episode() == 200
-    
-def test_select_genre():
-    assert select_genre() == 200
-    
-    
 # UPDATE CONTENT
 def test_update_movie():
     assert update_movie() == 200
@@ -75,16 +61,31 @@ def test_update_episode():
 def test_update_genre():
     assert update_genre() == 200
     
+    
+# SELECT CONTENT
+def test_select_movie():
+    assert select_movie() == 200
+    
+def test_select_series():
+    assert select_series() == 200
+    
+def test_select_episode():
+    assert select_episode() == 200
+    
+def test_select_genre():
+    assert select_genre() == 200
+    
 
 # DELETE CONTENT
 def test_delete_movie():
     assert delete_movie() == 200
-    
-def test_delete_series():
-    assert delete_series() == 200
-    
+   
+# Delete episode before series
 def test_delete_episode():
     assert delete_episode() == 200
+
+def test_delete_series():
+    assert delete_series() == 200
     
 def test_delete_genre():
     assert delete_genre() == 200
