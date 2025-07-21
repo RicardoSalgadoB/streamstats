@@ -18,8 +18,8 @@ unset PGPASSWORD
 if [[ -z "$TABLE_COUNT" ]]; then
   echo "Error: Could not connect to the database or query for tables. Proceding anyway"
 elif (( TABLE_COUNT == 0 )); then
-  echo "Database '${DB_NAME}' is empty. Running schema and data initialization"
-  python -m app.models
+  echo "Database '${DB_NAME}' is empty. Running data initialization"
+  alembic upgrade head
   python -m examples.fake_content
 else
   echo "Database '${DB_NAME}' already has ${TABLE_COUNT} relations. Skipping initialization."

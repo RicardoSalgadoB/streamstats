@@ -28,13 +28,13 @@ Since the semester ended, I've not had the chance to work on this project, but u
     * **WHY?** Its robustness, adaptability and scalability. Docker is standard in backend development.
 
 ## Features
-* **Content Management**:
-* **Rating System**:
-* **Object Relational Mapper (ORM)**:
-* **Joined Table Inheritnace**:
-* **Indexes**:
-* **Pagination**: 
-* **API Documentation**: 
+* **Content Management**: CRUD operations for movies, series, episodes and genres.
+* **Rating System**: Users dubmit ratings for content and averages are dynamically calculated.
+* **Object Relational Mapper (ORM)**: Python classes are automatically mapped to SQL tables. Handy for the migration from *C++* to *SQL*.
+* **Joined Table Inheritance**: A feature of SQLAlchemy that preserves Python Inheritance without data redundancies.
+* **Indexes**: An index on the name of the contents allows for fast information retrieval.
+* **Pagination**: Efficienty recovery of content data in managable chucks.
+* **API Documentation**: Automatically generated as feature of *Fast API*.
 
 ## Getting Started
 
@@ -63,9 +63,9 @@ RESPONSE TO SHOW ALL MOVIES
 
 ## Future
 * **Front-end**: No, I won't add a frontend. I'm a *data scientist delving into data engineering delving into backend*, I will not become a *data scientist delving into data engineering delving into backend delving into frontend*. For the conceivable future.
-* **Alembic**: 
 * **Optimization with Core**:
 * **
+* **ETL Pipeline**: 
 
 ## Contact
 Ricardo Salgado Benítez - [ricardosabe2018@gmail.com] - []

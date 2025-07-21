@@ -204,7 +204,7 @@ content_index = sa.Index("idx_content_name", Content.name)
 
 if __name__ == "__main__":
     Base.metadata.drop_all(ENGINE)
-    Base.metadata.create_all(ENGINE)
+    #Base.metadata.create_all(ENGINE)
     
-    content_index.drop(bind=ENGINE)
-    content_index.create(bind=ENGINE)
+    #content_index.drop(bind=ENGINE)
+    #content_index.create(bind=ENGINE)
