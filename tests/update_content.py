@@ -1,3 +1,5 @@
+# This file provides functions to update the contents added in add_content
+
 import requests
 
 def update_movie():
@@ -55,5 +57,5 @@ def update_genre():
 if __name__ == '__main__':
     update_movie()
     update_series()
-    update_episode()
+    update_episode()    # Execute after update series
     update_genre()

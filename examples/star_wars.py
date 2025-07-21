@@ -6,12 +6,16 @@ import sqlalchemy.orm as orm
 
 from app.models import Movie, Episode, Series, Genre
 
+# Load secrets
 load_dotenv()
 db_url = os.getenv("DB_URL")
+
+# Create a sqlalchemy engine
 ENGINE = sa.create_engine(db_url)
 
 
 def Star_Wars():
+    """Function to add some of the content of Star Wars to the db"""
     # Genres
     sci_fi = Genre(name="Science Fiction")
     fantasy = Genre(name="Fantasy")

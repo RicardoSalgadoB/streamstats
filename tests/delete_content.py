@@ -1,3 +1,5 @@
+# This file provides functions to delete teh content added and update in add_content and update_content
+
 import requests
 
 def delete_movie():

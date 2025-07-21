@@ -1,3 +1,5 @@
+# This file provides funcitons to add content
+
 import requests
 
 def add_movie():
@@ -61,5 +63,5 @@ def add_genre():
 if __name__ == '__main__':
     add_movie()
     add_series()
-    add_episode()
+    add_episode()   # Need to be executed after series
     add_genre()

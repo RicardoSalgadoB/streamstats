@@ -1,8 +1,10 @@
+# This file provides funcitons to select the contents add and updated in add_content and update_content, respectiviely
+
 import requests
 from time import time
 
 def select_movie():
-    url = "http://127.0.0.1:8000/movies/A Sexy Tale"
+    url = "http://127.0.0.1:8000/movies/The Life and Times of Alexander the Great"
     response = requests.get(url)
     
     print(response.status_code)

@@ -11,7 +11,7 @@ def movie():
     t1 = time()
     find_movie("A Sexy Tale")
     t2 = time()
-    print(f"Finding The Cut of Deborah Roberts takes {(t2-t1):.3f} microseconds")
+    print(f"Finding A Sexy Tale takes {(t2-t1):.3f} microseconds")
     
 def series():
     t1 = time()
@@ -27,4 +27,7 @@ def episode():
 
 
 if __name__ == "__main__":
+    # Tests how fasts finds can be executed. Beware of the Cache
     movie()
+    series()
+    episode()

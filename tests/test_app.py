@@ -1,6 +1,13 @@
+# File compliant with pytest
+# The test methods are not dynamical, aka. their input is fixed
+# This is done for convenience reasons
+# And besides let me put in my catalog whatever I want and not some random stuff for once
+
+# Due to this fixed nature, the status codes can be specified in the assertions
+
 import pytest
 
-from app.server import app
+# import all neccessary requirements
 from tests.add_content import (
     add_movie,
     add_series,
@@ -29,16 +36,16 @@ from tests.delete_content import (
 
 # ADD CONTENT
 def test_add_movie():
-    assert add_movie() == 200
+    assert add_movie() == 201
     
 def test_add_series():
-    assert add_series() == 200
+    assert add_series() == 201
     
 def test_add_episode():
-    assert add_episode() == 200
+    assert add_episode() == 201
     
 def test_add_genre():
-    assert add_genre() == 200
+    assert add_genre() == 201
     
     
 # SELECT CONTENT

@@ -41,4 +41,12 @@ def genres():
 
 
 if __name__ == "__main__":
-    movies()
+    # Tests how fast paginated information can be shown. Beware teh cache.
+    t1 = time_ns()
+    all()
+    #movies()   # already shown in all
+    #series()
+    episodes()
+    genres()
+    t2 = time_ns()
+    print(f"Showing all the series, movies, episodes and genres takes {(t2-t1)/1000:.0f} microseconds")

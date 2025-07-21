@@ -112,7 +112,7 @@ def show_series(page: int = 1, size: int = 20) -> List[dict]:
             raise HTTPException(status_code=404, detail="No series in the database. Add one.")
         
             
-def show_all(page: int, size: int = 20) -> List[dict]:
+def show_all(page: int = 1, size: int = 20) -> List[dict]:
     """Show both all series and all movies in a paginated manner for performance reasons.
 
     Args:

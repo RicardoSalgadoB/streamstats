@@ -1,3 +1,5 @@
+# This program rates some of the contents from Star Wars that were added previously.
+
 import requests
 
 
