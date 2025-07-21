@@ -11,19 +11,19 @@ def movie():
     t1 = time()
     find_movie("A Sexy Tale")
     t2 = time()
-    print(f"Finding A Sexy Tale takes {(t2-t1):.3f} microseconds")
+    print(f"Finding A Sexy Tale takes {(t2-t1):.6f} seconds")
     
 def series():
     t1 = time()
     find_series("Large Test")
     t2 = time()
-    print(f"Finding Large Test takes {(t2-t1):.6f} microseconds")
+    print(f"Finding Large Test takes {(t2-t1):.6f} seconds")
     
 def episode():
     t1 = time()
     find_episode("Narkina 5", "&|")
     t2 = time()
-    print(f"Finding Narkina 5 takes {(t2-t1):.6f} microseconds")
+    print(f"Finding Narkina 5 takes {(t2-t1):.6f} seconds")
 
 
 if __name__ == "__main__":

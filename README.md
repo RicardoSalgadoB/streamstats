@@ -4,7 +4,7 @@ A RESTful backend for managing streaming catalog, built with Python, FastAPI, an
 ## Summary
 A **Python RESTful API** for a streaming service catalog utilizing a peristent **PostgreSQL** database and **SQLAlchemy ORM** for DB-API robust interactions, containerized using **Docker**. It enables efficient management of movies, series, episodes, genres, and user ratings. 
 
-The primary goal was to demonstrate proficiency in modern backend development practices, relational database design, and API development, building upon a foundational understanding of databases.
+My primary goal was to demonstrate proficiency in modern backend development practices, relational database design, API development, and to showcase a proficient understanding of databases.
 
 ## Background
 Last semester, I had to code a *C++* project to store a catalog of movies and series. While doing so, I couldn't but think that no real company would build a database with pure *C++*, instead, I tought, they would do it using *SQL*.
@@ -32,7 +32,7 @@ Since the semester ended, I've not had the chance to work on this project, but u
 
 ## Features
 * **Content Management**: CRUD operations for movies, series, episodes and genres.
-* **Rating System**: Users dubmit ratings for content and averages are dynamically calculated.
+* **Rating System**: Users submits ratings for content and averages are dynamically calculated.
 * **Object Relational Mapper (ORM)**: Python classes are automatically mapped to SQL tables. Handy for the migration from *C++* to *SQL*.
 * **Joined Table Inheritance**: A feature of SQLAlchemy that preserves Python Inheritance without data redundancies.
 * **Indexes**: An index on the name of the contents allows for fast information retrieval.
@@ -150,7 +150,7 @@ Out of testing, the following results came out:
 
 
 ### Comparison with previous C++ implementation
-The average search takes around 10 microseconds (3 lightkilometers or 1.9 lightmiles on the same hardware, if the Bethesda Terrace exploted, people in the Empire State Building would see that at the same time my search ended).
+The average search takes around 10 microseconds (3 lightkilometers or 1.9 lightmiles on the same hardware, if the Bethesda Terrace exploted, people in the Empire State Building would see that at the same time my search ended). All things said *C++* only has a 100 content database, but even with that the performance of this app in such cirumstances is roughly the same as right now.
 
 I know that SQL has its benefits (persistency and sharability) but this is harsh.
 
