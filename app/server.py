@@ -1,3 +1,6 @@
+from fastapi import FastAPI, status
+
+# Import everything, its a weird approach I'll grant that
 from app.utils import (
     show_movies,
     show_series,
@@ -29,8 +32,8 @@ from app.utils import (
     update_genre,
     Rating
 )
-from fastapi import FastAPI
 
+# Declare App
 app = FastAPI()
 
 # Movie methods 
@@ -66,11 +69,14 @@ app.post("/series/{series_name}/episodes/{name}/rate", name="rate an episode")\
     (rate_episode)
 
 # Adding content methods
-app.post("/movies", name="add a movie")(add_movie)
-app.post("/series", name="add a series")(add_series)
-app.post("/series/{series_name}/episodes", name="add an episode")\
+app.post("/movies", name="add a movie", status_code=status.HTTP_201_CREATED)\
+    (add_movie)
+app.post("/series", name="add a series", status_code=status.HTTP_201_CREATED)\
+    (add_series)
+app.post("/series/{series_name}/episodes", name="add an episode", status_code=status.HTTP_201_CREATED)\
     (add_episode)
-app.post("/genres", name="add a genre")(add_genre)
+app.post("/genres", name="add a genre", status_code=status.HTTP_201_CREATED)\
+    (add_genre)
 
 # Delete content methods
 app.delete("/movies/{name}", name="remove a movie")(remove_movie)

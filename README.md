@@ -14,7 +14,7 @@ Since the semester ended, I've not had the chance to work on this project, but u
 ## Tech Stack
 * ***PostgreSQL***: 
     * **HOW?** Used it to store the information about the movies and series. 
-    * **WHY?** The most used Relational Mapping Database (RMDB) because of its capabilities, ACID complience and efficiency. *NoSQL* was another option, but I believe that in my position (I'm data not backend) Postgres would be more useful.
+    * **WHY?** The most used Relational Mapping Database (RMDB) because of its capabilities and efficiency. *NoSQL* was another option, but I believe that in my position (I'm data not backend) Postgres would be more useful.
 * ***FastAPI***:
     * **HOW?** It creates an API to access and modify the information of the catalog.
     * **WHY?** The other candidates where *Flask* and *Django*. I wanted to use a lightweight backend, so *Django* was out of the question. *FastAPI* is quickly gaining traction in the backend ecosystem and personally prefer its syntax.
@@ -65,6 +65,8 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+4. Configure local DB_URL (prefereably with .env)
 
 ### Running the application
 
