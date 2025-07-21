@@ -66,11 +66,11 @@ app.post("/series/{series_name}/episodes/{name}/rate", name="rate an episode")\
     (rate_episode)
 
 # Adding content methods
-app.post("/movies/add", name="add a movie")(add_movie)
-app.post("/series/add", name="add a series")(add_series)
-app.post("/series/{series_name}/episodes/add", name="add an episode")\
+app.post("/movies", name="add a movie")(add_movie)
+app.post("/series", name="add a series")(add_series)
+app.post("/series/{series_name}/episodes", name="add an episode")\
     (add_episode)
-app.post("/genres/add", name="add a genre")(add_genre)
+app.post("/genres", name="add a genre")(add_genre)
 
 # Delete content methods
 app.delete("/movies/{name}", name="remove a movie")(remove_movie)

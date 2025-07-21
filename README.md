@@ -1,5 +1,5 @@
 # StreamStats
-A RESTful backend for managing video content, built with Python, FastAPI, and PostgreSQL.
+A RESTful backend for managing streaming catalog, built with Python, FastAPI, and PostgreSQL.
 
 ## Summary
 A **Python RESTful API** for a streaming service catalog utilizing a peristent **PostgreSQL** database and **SQLAlchemy ORM** for DB-API robust interactions, containerized using **Docker**. It enables efficient management of movies, series, episodes, genres, and user ratings. 
@@ -38,7 +38,84 @@ Since the semester ended, I've not had the chance to work on this project, but u
 
 ## Getting Started
 
-## API Endpoints
+### Prerequisites
+* Python 3.9+
+* Docker
+* pip
+* venv
+
+### Installation
+
+1. Clone this repo
+```bash
+git clone [https://github/RicardoSalgadoB/streamstats.git](https://github/RicardoSalgadoB/streamstats.git)
+cd streamstats
+```
+
+2. Create and activate a virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+3. Install python dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### Running the application
+
+1. Start the container using Docker Compose:
+```bash
+docker compose up --build -d
+```
+
+2. Access documentation at `http://localhost:8000/docs`.
+
+3. Stop the container (ensuring data persisitency):
+```bash
+docker compose down
+```
+
+## API endpoints
+Documentation can also be accessed at `http://localhost:8000/docs`.
+
+**Movie Retrieval Methods**
+- `GET  /movies`: Retrieve a paginated list of movies.
+- `GET  /movies/{name})`: Get details for a movie with the given name.
+
+**Series Retrieval Methods**
+- `GET  /series`: Retrieve a paginated list of series.
+- `GET  /series/{name}`: Get details for a specific series.
+- `GET  /series/{name}/episodes`: Retrieve a list for the episodes of series.
+- `GET  /series/{series_name}/episodes/{name}`: Get a given episode of a given series.
+
+**All Content Retrieval Methods**
+- `GET  /content`: Retrieve a paginated list of movies and series.
+- `GET  /content/{name}`: Get details for a given movie or series.
+
+**Rating Methods**
+- `POST /movies/{name}/rate`: Submit a rating for a movie.
+- `POST /series/{name}/rate`: Submit a rating for a series.
+- `POST /series/{series_name}/episodes/{name}/rate`: Submit a rating for the given episode of a series.
+
+**Adding Content Methods**
+- `POST /movies`: Create a new movie. Accepts a json payload.
+- `POST /series`: Create a new series. Accepts a json payload.
+- `POST /series/{series_name}/episodes`: Create a new episode of a given series. Accepts a json payload.
+- `POST /genres`: Create a new genre. Accepts a json payload.
+
+**Delete Content Methods**
+- `DELETE /movies/{name}`: Delete a given movie.
+- `DELETE /series/{name}`: Delete a given series.
+- `DELETE /series/{series_name}/episodes/{name}`: Delte an episode of a given series.
+- `DELETE /genres/{name}`: Delete a given genre.
+
+**Update Content Methods**
+- `PATCH /movies/{name}`: Update a movie. Accepts a json payload.
+- `PATCH /series/{name}`: Update a series. Accepts a json payload.
+- `PATCH /series/{series_name}/episodes/{name}`: Update an episode of a given series. Accepts a json payload.
+- `PATCH /genres/{name}`: Update a genre. Accepts a json payload.
 
 ## Database Schemas
 The application's data is stored in a PostgreSQL 16 Database configured with the following schemas:
@@ -53,6 +130,8 @@ The application's data is stored in a PostgreSQL 16 Database configured with the
 
 ## Testing
 
+
+
 ## Performance
 
 AVERAGE RESPONSE FOR SINGLE MOVIE
@@ -64,7 +143,7 @@ RESPONSE TO SHOW ALL MOVIES
 ## Future
 * **Front-end**: No, I won't add a frontend. I'm a *data scientist delving into data engineering delving into backend*, I will not become a *data scientist delving into data engineering delving into backend delving into frontend*. For the conceivable future.
 * **Optimization with Core**:
-* **
+* **Live Deplyment**:
 * **ETL Pipeline**: 
 
 ## Contact

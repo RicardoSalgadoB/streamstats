@@ -1,12 +1,13 @@
 import os
 import random
+from typing import List
+import json
 
 from dotenv import load_dotenv
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
 from app.models import Movie, Episode, Series, Genre
-from typing import List
 
 from examples.fake_generator import generate_fake_title
 
@@ -59,20 +60,29 @@ def generate_movies() -> List[Movie]:
     return movies
 
 
-def generate_series() -> List[Series]:
+def generate_series():
     series = []
+    series_names: dict[str, List[str]] = {}
     for _ in range(2000):
-        series.append(Series(name=generate_fake_title()))
-    return series
+        name = generate_fake_title()
+        series.append(Series(name=name))
+        series_names[name] = []
+    return series, series_names
         
         
-def generate_episodes(series: List[Series]) -> None:
+def generate_episodes(series: List[Series], series_names: dict[str, List[str]]) -> None:
     for _ in range(20000):
-        random.choice(series).episodes.append(Episode(
-            name=generate_fake_title(),
+        ep_name = generate_fake_title()
+        s = random.choice(series)
+        s.episodes.append(Episode(
+            name=ep_name,
             duration=random.randint(5, 100),
             season=random.randint(1, 10)
         ))
+        series_names[s.name].append(ep_name)
+        
+    with open("series.json", "w") as f:
+        json.dump(series_names, f)
         
         
 def embed_genres(
@@ -96,8 +106,8 @@ def embed_genres(
 if __name__ == '__main__':
     genres = generate_genres()
     movies = generate_movies()
-    series = generate_series()
-    generate_episodes(series)
+    series, series_names = generate_series()
+    generate_episodes(series, series_names)
     embed_genres(genres, movies, series)
     
     with orm.Session(ENGINE) as session:

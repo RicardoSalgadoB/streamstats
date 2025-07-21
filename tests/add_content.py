@@ -1,7 +1,7 @@
 import requests
 
 def add_movie():
-    url = "http://127.0.0.1:8000/movies/add"
+    url = "http://127.0.0.1:8000/movies"
     payload = {
         'name': 'The Life and Times of Alexander the Great',
         'duration': 98,
@@ -16,7 +16,7 @@ def add_movie():
     
     
 def add_series():
-    url = "http://127.0.0.1:8000/series/add"
+    url = "http://127.0.0.1:8000/series"
     payload = {
         'name': 'The Life and Times of Charlemagne',
         'genres': ['Historical']
@@ -30,7 +30,7 @@ def add_series():
     
     
 def add_episode():
-    url = "http://127.0.0.1:8000/series/The Life and Times of Charlemagne/episodes/add"
+    url = "http://127.0.0.1:8000/series/The Life and Times of Charlemagne/episodes"
     payload = {
         'name': 'Bad Brother and a Worse Border',
         'duration': 56,
@@ -46,7 +46,7 @@ def add_episode():
     
     
 def add_genre():
-    url = "http://127.0.0.1:8000/genres/add"
+    url = "http://127.0.0.1:8000/genres"
     payload = {
         'name': 'French',
     }
