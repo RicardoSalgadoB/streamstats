@@ -81,7 +81,7 @@ def generate_episodes(series: List[Series], series_names: dict[str, List[str]]) 
         ))
         series_names[s.name].append(ep_name)
         
-    with open("series.json", "w") as f:
+    with open("names/series.json", "w") as f:
         json.dump(series_names, f)
         
         

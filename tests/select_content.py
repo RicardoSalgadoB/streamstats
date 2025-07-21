@@ -1,7 +1,8 @@
 import requests
+from time import time
 
 def select_movie():
-    url = "http://127.0.0.1:8000/movies/The Life and Times of Alexander the Great"
+    url = "http://127.0.0.1:8000/movies/A Sexy Tale"
     response = requests.get(url)
     
     print(response.status_code)
@@ -38,6 +39,6 @@ def select_genre():
     
 if __name__ == '__main__':
     select_movie()
-    select_series()
-    select_episode()
-    select_genre()
+    #select_series()
+    #select_episode()
+    #select_genre()

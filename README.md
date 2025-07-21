@@ -21,6 +21,9 @@ Since the semester ended, I've not had the chance to work on this project, but u
 * ***SQLAlchemy**:
     * **HOW?** I needed a way to connect the API with the DB and that is what this technology does. It does this with an *Object Relational Mapper (ORM)*, but as I will discuss later it could also be done with the only the *core* features of SQLAlchemy.
     * **WHY?** SQLAlchemy is the most popular. If I had chosen *django*, I would have considered *DjangoORM*, but I didn't.
+* ***Alembic***:
+    * **HOW?** It manages database migrations, instead of creating schemas with SQLAlchemy.
+    * **WHY?** Even though I could have stuck with SQLAlchemy, this technology is standard industry and facilitates management of the database.
 * ***Locust***:
     * **HOW?** Its use is for testing the API, its latency and throughput.
 * ***Docker***: 
@@ -129,22 +132,34 @@ The application's data is stored in a PostgreSQL 16 Database configured with the
 - **`rating` table**: Stores user ratings for specific content,
 
 ## Testing
+The following where carried out:
 
-
+- **Unit Tests**: Implemented with `pytest`, both for API methods and Database intereactions.
+- **Database Migration Tests**: Migrations are tested to ensure schema evolution reliability (even though there is only one version).
+- **Load Tests**: Conducted performance tests with *Locust* to evaluate API throughput.
 
 ## Performance
+Out of testing, the following results came out:
 
-AVERAGE RESPONSE FOR SINGLE MOVIE
-20 ms
+- For common lockups, updates and rate methods, the average API response time of the application is *<20 ms*.
+- The application supported a throughput of *240 rps* for a minute before significant latency degradation. However, failures show a rate of *1 fps* with an *75 rps*.
+- Database searches are executed in *0.5 ms* accross a *25,000 row database*, even though searches through SQLAlchemy take *50 ms* on average.
+- Multiple content lookups (aka. the showing methods) take *400 ms* on average (it depends on the size specified by the request).
 
-RESPONSE TO SHOW ALL MOVIES
-28 s
+
+### Comparison with previous C++ implementation
+The average search takes around 10 microseconds (3 lightkilometers or 1.9 lightmiles on the same hardware, if the Bethesda Terrace exploted, people in the Empire State Building would see that at the same time my search ended).
+
+I know that SQL has its benefits (persistency and sharability) but this is harsh.
+
+### Hardware
+The tests were run on a *M4 Macbook Pro* at 30°C (86 °F) and 49% humidity (source: Apple Weather).
 
 ## Future
 * **Front-end**: No, I won't add a frontend. I'm a *data scientist delving into data engineering delving into backend*, I will not become a *data scientist delving into data engineering delving into backend delving into frontend*. For the conceivable future.
-* **Optimization with Core**:
-* **Live Deplyment**:
-* **ETL Pipeline**: 
+* **Optimization with Core**: I don't believe that any optimization will achieve rates comparable to C++, but it would be interesting to see how much I get (probably not much).
+* **Live Deployment**: I would like to deployment in the future as it is cool to have the project online (UNRELATED: my prose is a bit worse this time of the night), but the money constraint is always there.
+* **ETL Pipeline**: This would allow me to become a *data scientist that only delves into data engineering* which would be something. Either way I already have an idea of how I might approach this but I need to learn the technology. For now I have to choose if  I do the documentation *breath-first* or *depth-first*.
 
 ## Contact
-Ricardo Salgado Benítez - [ricardosabe2018@gmail.com] - []
+Ricardo Salgado Benítez - [ricardosabe2018@gmail.com] - [https://www.linkedin.com/in/ricardosalgadob/]

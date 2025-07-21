@@ -350,10 +350,15 @@ def add_episode(raw: RawEpisode, series_name: str):
     
 
 def add_genre(raw: RawGenre):
-    g = Genre(name=raw.name)
+    stmt = sa.select(sa.func.count()).select_from(Genre).filter(Genre.name == raw.name)
     with orm.Session(ENGINE) as session:
-        session.add(g)
-        session.commit()
+        count = session.scalar(stmt)
+        if count == 0:
+            g = Genre(name=raw.name)
+            session.add(g)
+            session.commit()
+        else:
+            return {"message": f"The genre '{raw.name}' already exists"}
         
     return {"message": f"The genre '{raw.name}' has been added"}
     
