@@ -72,6 +72,10 @@ class Rating(Base):
     
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
     score: orm.Mapped[int] = orm.mapped_column(nullable=False)
+    review: orm.Mapped[str] = orm.mapped_column(
+        sa.String(255), 
+        nullable=True
+    )
     
     # ID for the many to one relationship
     content_id: orm.Mapped[int] = orm.mapped_column(
@@ -119,12 +123,14 @@ class Content(Base):
     
     def __repr__(self) -> str:
         genres = [str(genre.name) for genre in self.genres]
+        reviews = [str(rating.review for rating in self.ratings)]
         genres_str = ", ".join(genres)
         return (
             f"{self.__class__.__name__}(id={self.id}, title={self.name!r}, " 
             + f"duration='{self.duration!s} minutes', genre(s)={genres_str!r}, "    
                 # duration isn't an attribute of content but of its children
-            + f"average_rating={self.average!r})"
+            + f"average_rating={self.average!r}, "
+            + f"reviews={reviews})"
         )
         
     def to_dict(self) -> dict:
