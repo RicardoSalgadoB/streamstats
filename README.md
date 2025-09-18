@@ -87,17 +87,17 @@ Documentation can also be accessed at `http://localhost:8000/docs`.
 
 **Movie Retrieval Methods**
 - `GET  /movies`: Retrieve a paginated list of movies.
-- `GET  /movies/{name})`: Get details for a movie with the given name.
+- `GET  /movies/find`: Get details for a movie(s) with the given id or name, specified as query parameters.
 
 **Series Retrieval Methods**
 - `GET  /series`: Retrieve a paginated list of series.
-- `GET  /series/{name}`: Get details for a specific series.
-- `GET  /series/{name}/episodes`: Retrieve a list for the episodes of series.
-- `GET  /series/{series_name}/episodes/{name}`: Get a given episode of a given series.
+- `GET  /series/find`: Get details for a specific series. ID or Name sent as query parameters.
+- `GET  /series/episodes`: Retrieve a list for the episodes of series. ID or Name of the series sent as query parameters.
+- `GET  /episode/find`: Get a given episode of a given series. ID or Name  of both sent as query parameters.
 
 **All Content Retrieval Methods**
 - `GET  /content`: Retrieve a paginated list of movies and series.
-- `GET  /content/{name}`: Get details for a given movie or series.
+- `GET  /content/find`: Get details for a given movie or series.
 
 **Rating Methods**
 - `POST /movies/{name}/rate`: Submit a rating for a movie.
