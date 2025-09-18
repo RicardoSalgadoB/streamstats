@@ -6,7 +6,7 @@ import requests
 def movie_example():
     url = "http://127.0.0.1:8000/movies/Solo: A Star Wars Story/rate"
     payload = {
-        "score": 3
+        "score": 3,
     }
     
     response = requests.post(url, json=payload)
@@ -18,7 +18,8 @@ def movie_example():
 def series_example():
     url = "http://127.0.0.1:8000/series/The Bad Batch/rate"
     payload = {
-        "score": 2
+        "score": 2,
+        "review": "A children's show"
     }
     
     response = requests.post(url, json=payload)

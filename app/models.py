@@ -93,6 +93,7 @@ class Rating(Base):
         return {
             "id": self.id,
             "score": self.score,
+            "review": self.review,
             "content": self.content.name
         }
 
@@ -123,7 +124,7 @@ class Content(Base):
     
     def __repr__(self) -> str:
         genres = [str(genre.name) for genre in self.genres]
-        reviews = [str(rating.review for rating in self.ratings)]
+        reviews = [str(rating.review) for rating in self.ratings]
         genres_str = ", ".join(genres)
         return (
             f"{self.__class__.__name__}(id={self.id}, title={self.name!r}, " 
@@ -134,12 +135,14 @@ class Content(Base):
         )
         
     def to_dict(self) -> dict:
+        reviews = [str(rating.review) for rating in self.ratings]
         return {
             "id": self.id,
             "title": self.name,
             "duration_minutes": self.duration,  # same as above
             "genre(s)": [str(genre.name) for genre in self.genres],
-            "average_rating": self.average
+            "average_rating": self.average,
+            "reviews": reviews,
         }
         
     @property

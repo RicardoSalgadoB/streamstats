@@ -23,6 +23,7 @@ ENGINE = sa.create_engine(db_url)
     # Class for posts/creating rows
 class RawRating(BaseModel):
     score: int
+    review: Optional[str] = None
     
     # Class for posts/creating rows
 class RawMovie(BaseModel):
@@ -30,25 +31,21 @@ class RawMovie(BaseModel):
     duration: int
     genres: List[str]
     
-    
     # Class for patches/updating rows
 class UpdateMovie(BaseModel):
     name: Optional[str] = None
     duration: Optional[int] = None
     genres: Optional[List[str]] = None
     
-    
     # Class for patches/updating rows
 class RawSeries(BaseModel):
     name: str
     genres: List[str]
     
-    
     # Class for patches/updating rows
 class UpdateSeries(BaseModel):
     name: Optional[str] = None
     genres: Optional[List[str]] = None
-    
     
     # Class for patches/updating rows
 class RawEpisode(BaseModel):
@@ -57,7 +54,6 @@ class RawEpisode(BaseModel):
     season: int
     genres: List[str]
     
-    
     # Class for patches/updating rows
 class UpdateEpisode(BaseModel):
     name: Optional[str] = None
@@ -65,10 +61,10 @@ class UpdateEpisode(BaseModel):
     season: Optional[int] = None
     genres: Optional[List[str]] = None
     
-
     # Class for patches/updating rows
 class RawGenre(BaseModel):
     name: str
+
 
 # SHOWING METHODS #
 
@@ -246,112 +242,247 @@ def show_content_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict
             raise HTTPException(status_code=404, detail=f"No series in genre '{name}'. Add one.")
     
     
-def show_eps_of_series(name: str, season: int = 0) -> List[dict]:
+def show_eps_of_series(
+    name: Optional[str]=None, 
+    ID: Optional[int]=None, 
+    season: int = 0
+) -> List[dict]:
     """Show all the episodes that are in a series (optinally, in a given season).
 
     Args:
-        name (str): Name of the series. Passed as path parameter.
+        name (str): Name of the series. Passed as query parameter.
+        ID (int): ID of the series. Passed as query parameter.
         season (int, optional): Number of the season to be shown. Defaults to 0, if so it is ignored. Passed as query parameter
 
     Returns:
         List[dict]:
             Success: A list of the episodes of the series (can be empty).
     """
-    series_stmt = sa.select(Series).where(Series.name == name)
+    # If name is sent as query parameter
+    if name:
+        series_stmt = sa.select(Series).where(Series.name == name)
 
-    with orm.Session(ENGINE) as session:
-        series = session.scalar(series_stmt)
-        if series and season == 0:
-            return [ep.to_dict() for ep in series.episodes]
-        elif series and season != 0:
-            return [ep.to_dict() for ep in series.episodes if ep.season == season]
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' is not a series")
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(series_stmt)
+            if series and season == 0:
+                return [ep.to_dict() for ep in series.episodes]
+            elif series and season != 0:
+                return [ep.to_dict() for ep in series.episodes if ep.season == season]
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' is not a series")
+    
+    # If ID is sent as query parameter
+    elif ID:
+        series_stmt = sa.select(Series).where(Series.id == ID)
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(series_stmt)
+            if series and season == 0:
+                return [ep.to_dict() for ep in series.episodes]
+            elif series and season != 0:
+                return [ep.to_dict() for ep in series.episodes if ep.season == season]
+            else:
+                raise HTTPException(status_code=404, detail=f"ID: {ID} not found or not associated with a series")
+    
+    # Tell the client to specify a name or an ID
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID of series must be specified in query parameters")
       
 
 # FINDING METHODS #
 
-def find_content(name: str) -> dict:
-    """A funciton to find any ONE specific movie, series or episodes.
+def find_content(name: Optional[str] = None, ID: Optional[int] = None) -> Union[dict, List[dict]]:
+    """A funciton to find any specific movie, series or episodes.
 
     Args:
         name (str): The name of the content that wants to be found. Passed as path parameter.
+        ID (int): The ID of the content. This is a query parameter.
 
     Returns:
         dict: A dictionary of the desired content.
     """
-    stmt = sa.select(Content).where(Content.name == name).order_by(Content.id).limit(1)
-        # If multiple with the same name, just pick the one with the smallest id
-        
-    with orm.Session(ENGINE) as session:
-        content = session.scalar(stmt)
-        if content:
-            return content.to_dict()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in Movies, Series or Episodes")
+    # If name is sent as query parameter
+    if name:
+        stmt = sa.select(Content).where(Content.name == name).order_by(Content.id)
+            # If multiple with the same name, return all
+
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt)
+            if contents:
+                res = []
+                for content in contents:
+                    res.append(content.to_dict())
+                return res
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in Movies, Series or Episodes")
+            
+    # If ID is sent as a query parameter
+    elif ID:
+        stmt = sa.select(Content).where(Content.id == ID)
+        with orm.Session(ENGINE) as session:
+            content = session.scalar(stmt)
+            if content:
+                return content.to_dict()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID: {ID} not found")
+            
+    # If neither, tell the client they need to specify at least one
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
     
 
-def find_movie(name: str) -> dict:
-    """Finds ONE specific movie.
+def find_movie(name: Optional[str] = None, ID: Optional[int] = None) -> Union[dict, List[dict]]:
+    """Finds a specific movie.
 
     Args:
-        name (str): The name of the movie. This is a path parameter.
+        name (str): The name of the movie. This is a query parameter.
+        ID (int): The ID of the movie. This is a query parameter.
 
     Returns:
         dict: A dictinary of the movie.
     """
-    stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id).limit(1)
-        # Same as above
-    
-    with orm.Session(ENGINE) as session:
-        movie = session.scalar(stmt)
-        if movie:
-            return movie.to_dict()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in Movies")
+    # If name is sent as query parameter
+    if name:
+        stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id)
+            # same as above
+
+        with orm.Session(ENGINE) as session:
+            movies = session.scalars(stmt)
+            if movies:
+                res = []
+                for m in movies:
+                    res.append(m.to_dict())
+                return res
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in Movies")
+            
+    # If ID is sent as a query parameter
+    elif ID:
+        stmt = sa.select(Movie).where(Movie.id == ID)
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(stmt)
+            if series:
+                return series.to_dict()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID: {ID} not found or not associated with a movie")
+            
+    # If neither, tell the client they need to specify at least one
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
             
             
-def find_series(name: str) -> dict:
-    """Finds ONE specific series (if multiple names, the one with the smallest id.)
+def find_series(name: Optional[str] = None, ID: Optional[int] = None) -> Union[dict, List[dict]]:
+    """Finds a specific series (if multiple with same name, retruns all.)
 
     Args:
-        name (str): Name of the series to be found. Passed as path parameter.
+        name (str): Name of the series to be found. Passed as query parameter.
+        ID (int): ID of the series to be found. Passed as query parameter.
 
     Returns:
         dict: The dictionary of the series
     """
-    stmt = sa.select(Series).where(Series.name == name).order_by(Series.id).limit(1)
-    
-    with orm.Session(ENGINE) as session:
-        series = session.scalar(stmt)
-        if series:
-            return series.to_dict()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in Series")
+    # If name is sent as query parameter
+    if name:
+        stmt = sa.select(Series).where(Series.name == name).order_by(Series.id)
+            # same as above
+
+        with orm.Session(ENGINE) as session:
+            series = session.scalars(stmt)
+            if series:
+                res = []
+                for s in series:
+                    res.append(s.to_dict())
+                return res
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in Series")
+            
+    # If ID is sent as a query parameter
+    elif ID:
+        stmt = sa.select(Series).where(Series.id == ID)
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(stmt)
+            if series:
+                return series.to_dict()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID: {ID} not found or not associated with a series")
+            
+    # If neither, tell the client they need to specify at least one
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
             
             
-def find_episode(name: str, series_name: str) -> dict:
-    """Find one episode that belongs to a given series.
+def find_episodes(
+    name: Optional[str], 
+    series_name: Optional[str], 
+    episode_id: Optional[int], 
+    series_id: Optional[int]
+) -> Union[dict, List[dict]]:
+    """Find episodes that belong to a given series.
 
     Args:
-        name (str): The name of the episodes. Passed as path parameter.
-        series_name (str): The name of the series. Passed as path parameter.
+        name (str): The name of the episodes. Passed as query parameter.
+        series_name (str): The name of the series. Passed as query parameter.
+        episode_id (str): The ID of the episode. Passed as query parameter.
+        series_id (str): The ID of the series. Passed as query parameter.
 
     Returns:
         dict: The ep dict if found.
     """
-    stmt = sa.select(Episode).where(Episode.name == name)
-    
-    with orm.Session(ENGINE) as session:
-        eps = session.scalars(stmt)
-        for ep in eps:  # If there are multiple episodes with the same name
-            if ep and ep.series.name == series_name:
-                    # Check everyone of them to see if it is in the given series
-                return ep.to_dict()
+    # If name is sent as query parameter
+    if name:
+        stmt = sa.select(Episode).where(Episode.name == name).order_by(Episode.id)
 
-        # This is still technically true even if the episode doesn't exist
-        raise HTTPException(status_code=404, detail=f"'{name}' not found in the Episodes of the series: '{series_name}'")
+        with orm.Session(ENGINE) as session:
+            eps = session.scalars(stmt)
+            res = []
+            if eps and series_name:
+                for ep in eps:
+                    if ep.series.name == series_name:
+                        res.append(ep.to_dict())
+                if res:
+                    return res
+                else:
+                    raise HTTPException(status_code=404, detail=f"'{name}' not found in Episodes of series '{series_name}'")
+            if eps and series_id:
+                for ep in eps:
+                    if ep.series_id == series_id:
+                        res.append(ep.to_dict())
+                if res:
+                    return res
+                else:
+                    raise HTTPException(status_code=404, detail=f"'{name}' not found in Episodes in series with ID '{series_id}'")
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in Episodes")
             
+    # If ID is sent as a query parameter
+    elif episode_id:
+        stmt = sa.select(Episode).where(Episode.id == episode_id)
+
+        with orm.Session(ENGINE) as session:
+            eps = session.scalars(stmt)
+            res = []
+            if eps and series_name:
+                for ep in eps:
+                    if ep.series.name == series_name:
+                        res.append(ep.to_dict())
+                if res:
+                    return res
+                else:
+                    raise HTTPException(status_code=404, detail=f"ID={episode_id} not found in Episodes of series '{series_name}'")
+            if eps and series_id:
+                for ep in eps:
+                    if ep.series_id == series_id:
+                        res.append(ep.to_dict())
+                if res:
+                    return res
+                else:
+                    raise HTTPException(status_code=404, detail=f"ID={episode_id} not found in Episodes in series with ID '{series_id}'")
+            else:
+                raise HTTPException(status_code=404, detail=f"ID={episode_id} not found in Episodes or not associated with episode")
+            
+    # If neither, tell the client they need to specify at least one
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
+    
             
 def find_genre(name: str) -> dict:
     """Find a given genre.
@@ -386,9 +517,10 @@ def rate_movie(raw: RawRating, name: str) -> dict:
         dict: Message indicating success.
     """
     score = raw.score
+    review = raw.review if raw.review else None
     if score > 5 or score < 1:
         raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
-    rating = Rating(score=score)
+    rating = Rating(score=score, review=review)
     
     stmt = sa.select(Movie).where(Movie.name==name).order_by(Movie.id).limit(1)
         # If there are movies that share a name
@@ -400,10 +532,15 @@ def rate_movie(raw: RawRating, name: str) -> dict:
             session.commit()
         else:
             raise HTTPException(status_code=404, detail=f"Movie '{name}' not found.")
-        
-    return {
-        "message": f"The movie '{name}' has been given a rating of {score}"
-    }
+    
+    if review:
+        return {
+            "message": f"The movie '{name}' has been given a rating of {score} with a review"
+        }
+    else:
+        return {
+            "message": f"The movie '{name}' has been given a rating of {score}"
+        }
 
         
 def rate_series(raw: RawRating, name: str) -> dict:
@@ -417,9 +554,10 @@ def rate_series(raw: RawRating, name: str) -> dict:
         dict: A message indicationg sucess.
     """
     score = raw.score
+    review = raw.review if raw.review else None
     if score > 5 or score < 1:
         raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
-    rating = Rating(score=score)
+    rating = Rating(score=score, review=review)
     
     stmt = sa.select(Series).where(Series.name==name)
     
@@ -430,10 +568,15 @@ def rate_series(raw: RawRating, name: str) -> dict:
             session.commit()
         else:
             raise HTTPException(status_code=404, detail=f"Series '{name}' not found.")
-        
-    return {
-        "message": f"The series '{name}' has been given a rating of {score}"
-    }
+    
+    if review:
+        return {
+            "message": f"The series '{name}' has been given a rating of {score} with a review"
+        }
+    else:
+        return {
+            "message": f"The series '{name}' has been given a rating of {score}"
+        }    
 
         
 def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
@@ -448,9 +591,10 @@ def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
         dict: A message indicating success.
     """
     score = raw.score
+    review = raw.review if raw.review else None
     if score > 5 or score < 1:
         raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
-    rating = Rating(score=score)
+    rating = Rating(score=score, review=review)
     stmt = sa.select(Episode).where(Episode.name==name)
     
     with orm.Session(ENGINE) as session:
@@ -458,10 +602,15 @@ def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
         for ep in eps:  # Check if each ep is in the series
             if ep.series.name == series_name:   # if so add the rating.
                 ep.ratings.append(rating)
-                session.commit()    
-                return {
-                    "message": f"The episode '{name}' has been given a rating of {score}"
-                }
+                session.commit()
+                if review:
+                    return {
+                        "message": f"The episode '{name}' has been given a rating of {score} with a review"
+                    }
+                else:
+                    return {
+                        "message": f"The episode '{name}' has been given a rating of {score}"
+                    }
     
     raise HTTPException(status_code=404, detail=f"The episode '{name}' is not in the series '{series_name}'")
 
