@@ -3,7 +3,7 @@
 import requests
 
 def update_movie():
-    url = "http://127.0.0.1:8000/movies/The Life and Times of Alexander the Great"
+    url = "http://127.0.0.1:8000/movies/update?ID=1"
     payload = {
         'duration': 99
     }
@@ -16,7 +16,7 @@ def update_movie():
     
     
 def update_series():
-    url = "http://127.0.0.1:8000/series/The Life and Times of Charlemagne"
+    url = "http://127.0.0.1:8000/series/update?ID=2"
     payload = {
         'name': 'The Life and Times of Charlesmagne'
     }
@@ -29,7 +29,7 @@ def update_series():
     
     
 def update_episode():
-    url = "http://127.0.0.1:8000/series/The Life and Times of Charlesmagne/episodes/Bad Brother and a Worse Border"
+    url = "http://127.0.0.1:8000/episodes/update?ID=3&series_id=2"
     payload = {
         'season': 2
     }
@@ -42,7 +42,7 @@ def update_episode():
     
     
 def update_genre():
-    url = "http://127.0.0.1:8000/genres/French"
+    url = "http://127.0.0.1:8000/genres/update?ID=1"
     payload = {
         'name': 'Parisien'
     }

@@ -32,7 +32,7 @@ def add_series():
     
     
 def add_episode():
-    url = "http://127.0.0.1:8000/series/The Life and Times of Charlemagne/episodes"
+    url = "http://127.0.0.1:8000/episodes?series_name=The Life and Times of Charlemagne"
     payload = {
         'name': 'Bad Brother and a Worse Border',
         'duration': 56,

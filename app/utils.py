@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Query
 
 from app.models import Content, Movie, Episode, Series, Genre, Rating
 
@@ -81,7 +81,7 @@ def show_movies(page: int = 1, size: int = 20) -> List[dict]:
     offset = (page - 1) * size  # Calculate offset from page and size
     stmt = sa.select(Movie).offset(offset).limit(size)  # Prepare statement
     with orm.Session(ENGINE) as session:
-        movies = session.scalars(stmt)  # execute statement
+        movies = session.scalars(stmt).all()  # execute statement
         if movies:
             return [m.to_dict() for m in movies]    # no need to commit only looking around
         else:
@@ -101,7 +101,7 @@ def show_series(page: int = 1, size: int = 20) -> List[dict]:
     offset = (page - 1) * size 
     stmt = sa.select(Series).offset(offset).limit(size)
     with orm.Session(ENGINE) as session:
-        series = session.scalars(stmt)
+        series = session.scalars(stmt).all()
         if series:
             return [s.to_dict() for s in series]
         else:
@@ -126,7 +126,7 @@ def show_all(page: int = 1, size: int = 20) -> List[dict]:
         .limit(size)
     )
     with orm.Session(ENGINE) as session:
-        contents = session.scalars(stmt)
+        contents = session.scalars(stmt).all()
         if contents:
             return [c.to_dict() for c in contents]
         else:
@@ -141,18 +141,24 @@ def show_genres() -> List[dict]:
     """
     stmt = sa.select(Genre)
     with orm.Session(ENGINE) as session:
-        genres = session.scalars(stmt)
+        genres = session.scalars(stmt).all()
         if genres:
             return [g.to_dict() for g in genres]
         else:
             raise HTTPException(status_code=404, detail="No genres in the catalog. Add one.")
 
 
-def show_movies_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]:
+def show_movies_by_genre(
+    name: Optional[str] = Query(None, description="Genre Name"),
+    ID: Optional[int] = Query(None, description="Genre ID"), 
+    page: int = 1, 
+    size: int = 20
+) -> List[dict]:
     """Show all movies that belong to a given genre in pages/chunks.
 
     Args:
-        name (str): Name of the genre. Passed as path parameter.
+        name (str): Name of the genre. Passed as query parameter.
+        ID (int): ID of the genre. Passed as query parameter.
         page (int, optional): Number of the page shown. Defaults to 1. Passed as query parameter.
         size (int, optional): How many results are going to be shown in each page. Passed as query parameter.
             Defaults to 20.
@@ -162,28 +168,55 @@ def show_movies_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]
             Success: Returns the list of the movie dicts of the given genre.
     """
     offset = (page - 1) * size
-    stmt = (
-        sa.select(Content)
-        .join(Genre.contents)   # Use content instead of movie because of this line
-        .where(sa.and_(Genre.name == name, Content.type == "movie"))
-        .order_by(Content.id)
-        .offset(offset)
-        .limit(size)
-    )
     
-    with orm.Session(ENGINE) as session:
-        movies = session.scalars(stmt)
-        if movies:
-            return [m.to_dict() for m in movies]
-        else:
-            raise HTTPException(status_code=404, detail=f"No movies in genre '{name}'. Add one.")
+    # If genre specifed by name
+    if name:
+        stmt = (
+            sa.select(Movie)
+            .join(Genre.contents)
+            .where(Genre.name == name)
+            .offset(offset)
+            .limit(size)
+        )
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt).all()
+            if contents:
+                return [c.to_dict() for c in contents]
+            else:
+                raise HTTPException(status_code=404, detail=f"No movies in genre '{name}'. Add one.")
+            
+    # By ID
+    elif ID:
+        stmt = (
+            sa.select(Content)
+            .join(Genre.contents)
+            .where(sa.and_(Content.type=='movie', Genre.id == ID))
+            .offset(offset)
+            .limit(size)
+        )
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt).all()
+            if contents:
+                return [c.to_dict() for c in contents]
+            else:
+                raise HTTPException(status_code=404, detail=f"No movies in genre with ID {ID}. Add one.")
+    
+    # Specify name or ID
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID of genre must be specified in query parameters")
           
             
-def show_series_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]:
+def show_series_by_genre(
+    name: Optional[str] = Query(None, description="Genre Name"),
+    ID: Optional[int] = Query(None, description="Genre ID"), 
+    page: int = 1, 
+    size: int = 20
+) -> List[dict]:
     """Show all series that belong to a given genre in paginated way.
 
     Args:
-        name (str): Name of the genre. Passed as path parameter.
+        name (str): Name of the genre. Passed as query parameter.
+        ID (int): ID of the genre. Passed as query parameter.
         page (int, optional): Number of the page shown. Defaults to 1. Passed as query parameter.
         size (int, optional): How many results are going to be shown in each page. Passed as query parameter.
             Defaults to 20.
@@ -193,28 +226,55 @@ def show_series_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]
             Success: Returns the list of the movie dicts of the given genre.
     """
     offset = (page - 1) * size
-    stmt = (
-        sa.select(Content)
-        .join(Genre.contents)   # Use content instead of series because of this line
-        .where(sa.and_(Genre.name == name, Content.type == "serie"))
-        .order_by(Content.id)
-        .offset(offset)
-        .limit(size)
-    )
     
-    with orm.Session(ENGINE) as session:
-        series = session.scalars(stmt)
-        if series:
-            return [s.to_dict() for s in series]
-        else:
-            raise HTTPException(status_code=404, detail=f"No series in genre '{name}'. Add one.")
+    # If genre specifed by name
+    if name:
+        stmt = (
+            sa.select(Content)
+            .join(Genre.contents)
+            .where(sa.and_(Content.type=='serie', Genre.name == name))
+            .offset(offset)
+            .limit(size)
+        )
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt).all()
+            if contents and [c for c in contents]:
+                return [c.to_dict() for c in contents]
+            else:
+                raise HTTPException(status_code=404, detail=f"No series in genre '{name}'. Add one.")
+            
+    # By ID
+    elif ID:
+        stmt = (
+            sa.select(Content)
+            .join(Genre.contents)
+            .where(sa.and_(Content.type=='serie', Genre.id == ID))
+            .offset(offset)
+            .limit(size)
+        )
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt).all()
+            if contents:
+                return [c.to_dict() for c in contents]
+            else:
+                raise HTTPException(status_code=404, detail=f"No series in genre with ID {ID}. Add one.")
+    
+    # Specify name or ID
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID of genre must be specified in query parameters")
 
             
-def show_content_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict]:
+def show_content_by_genre(
+    name: Optional[str] = Query(None, description="Genre ID"),
+    ID: Optional[int] = Query(None, description="Genre ID"), 
+    page: int = 1, 
+    size: int = 20
+) -> List[dict]:
     """Show both that belong to a given genre in paginated way.
 
     Args:
-        name (str): Name of the genre. Passed as path parameter.
+        name (str): Name of the genre. Passed as query parameter.
+        ID (int): ID of the genre. Passed as query parameter.
         page (int, optional): Number of the page shown. Defaults to 1. Passed as query parameter
         size (int, optional): How many results are going to be shown in each page. Passed as query parameter.
             Defaults to 20.
@@ -224,27 +284,51 @@ def show_content_by_genre(name: str, page: int = 1, size: int = 20) -> List[dict
             Success: Returns the list of the content dicts of the given genre.
     """
     offset = (page - 1) * size
-    stmt = (
-        sa.select(Content)
-        .join(Genre.contents)
-        .where(sa.and_(
-            sa.or_(Content.type=='movie', Content.type=='series'),
-            Genre.name == name
-        ))
-        .offset(offset)
-        .limit(size)
-    )
-    with orm.Session(ENGINE) as session:
-        contents = session.scalars(stmt)
-        if contents:
-            return [c.to_dict() for c in contents]
-        else:
-            raise HTTPException(status_code=404, detail=f"No series in genre '{name}'. Add one.")
+    
+    # If genre specifed by name
+    if name:
+        stmt = (
+            sa.select(Content)
+            .join(Genre.contents)
+            .where(Genre.name == name)
+            .offset(offset)
+            .limit(size)
+        )
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt).all()
+            if contents:
+                return [c.to_dict() for c in contents]
+            else:
+                raise HTTPException(status_code=404, detail=f"Nothing in genre '{name}'. Add something.")
+            
+    # By ID
+    elif ID:
+        print(1)
+        stmt = (
+            sa.select(Content)
+            .join(Genre.contents)
+            .where(sa.and_(
+                sa.or_(Content.type=='movie', Content.type=='series'),
+                Genre.id == ID
+            ))
+            .offset(offset)
+            .limit(size)
+        )
+        with orm.Session(ENGINE) as session:
+            contents = session.scalars(stmt).all()
+            if contents:
+                return [c.to_dict() for c in contents]
+            else:
+                raise HTTPException(status_code=404, detail=f"Nothing in genre with ID {ID}. Add something.")
+    
+    # Specify name or ID
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID of genre must be specified in query parameters")
     
     
 def show_eps_of_series(
-    name: Optional[str]=None, 
-    ID: Optional[int]=None, 
+    name: Optional[str] = Query(None, description="Series name"), 
+    ID: Optional[int] = Query(None, description="Series ID"), 
     season: int = 0
 ) -> List[dict]:
     """Show all the episodes that are in a series (optinally, in a given season).
@@ -290,7 +374,10 @@ def show_eps_of_series(
 
 # FINDING METHODS #
 
-def find_content(name: Optional[str] = None, ID: Optional[int] = None) -> Union[dict, List[dict]]:
+def find_content(
+    name: Optional[str] = Query(None, description="Content name"), 
+    ID: Optional[int] = Query(None, description="Content ID")
+) -> Union[dict, List[dict]]:
     """A funciton to find any specific movie, series or episodes.
 
     Args:
@@ -306,7 +393,7 @@ def find_content(name: Optional[str] = None, ID: Optional[int] = None) -> Union[
             # If multiple with the same name, return all
 
         with orm.Session(ENGINE) as session:
-            contents = session.scalars(stmt)
+            contents = session.scalars(stmt).all()
             if contents:
                 res = []
                 for content in contents:
@@ -330,7 +417,10 @@ def find_content(name: Optional[str] = None, ID: Optional[int] = None) -> Union[
         raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
     
 
-def find_movie(name: Optional[str] = None, ID: Optional[int] = None) -> Union[dict, List[dict]]:
+def find_movie(
+    name: Optional[str] = Query(None, description="Movie name"), 
+    ID: Optional[int] = Query(None, description="Movie ID")
+) -> Union[dict, List[dict]]:
     """Finds a specific movie.
 
     Args:
@@ -346,7 +436,7 @@ def find_movie(name: Optional[str] = None, ID: Optional[int] = None) -> Union[di
             # same as above
 
         with orm.Session(ENGINE) as session:
-            movies = session.scalars(stmt)
+            movies = session.scalars(stmt).all()
             if movies:
                 res = []
                 for m in movies:
@@ -370,7 +460,10 @@ def find_movie(name: Optional[str] = None, ID: Optional[int] = None) -> Union[di
         raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
             
             
-def find_series(name: Optional[str] = None, ID: Optional[int] = None) -> Union[dict, List[dict]]:
+def find_series(
+    name: Optional[str] = Query(None, description="Series name"), 
+    ID: Optional[int] = Query(None, description="Series ID")
+) -> Union[dict, List[dict]]:
     """Finds a specific series (if multiple with same name, retruns all.)
 
     Args:
@@ -386,7 +479,7 @@ def find_series(name: Optional[str] = None, ID: Optional[int] = None) -> Union[d
             # same as above
 
         with orm.Session(ENGINE) as session:
-            series = session.scalars(stmt)
+            series = session.scalars(stmt).all()
             if series:
                 res = []
                 for s in series:
@@ -411,17 +504,17 @@ def find_series(name: Optional[str] = None, ID: Optional[int] = None) -> Union[d
             
             
 def find_episodes(
-    name: Optional[str], 
-    series_name: Optional[str], 
-    episode_id: Optional[int], 
-    series_id: Optional[int]
+    name: Optional[str] = Query(None, description="Episode name"), 
+    series_name: Optional[str] = Query(None, description="Series name"), 
+    ID: Optional[int] = Query(None, description="Episode ID"), 
+    series_id: Optional[int] = Query(None, description="Series ID")
 ) -> Union[dict, List[dict]]:
     """Find episodes that belong to a given series.
 
     Args:
         name (str): The name of the episodes. Passed as query parameter.
         series_name (str): The name of the series. Passed as query parameter.
-        episode_id (str): The ID of the episode. Passed as query parameter.
+        ID (str): The ID of the episode. Passed as query parameter.
         series_id (str): The ID of the series. Passed as query parameter.
 
     Returns:
@@ -432,7 +525,7 @@ def find_episodes(
         stmt = sa.select(Episode).where(Episode.name == name).order_by(Episode.id)
 
         with orm.Session(ENGINE) as session:
-            eps = session.scalars(stmt)
+            eps = session.scalars(stmt).all()
             res = []
             if eps and series_name:
                 for ep in eps:
@@ -454,11 +547,11 @@ def find_episodes(
                 raise HTTPException(status_code=404, detail=f"'{name}' not found in Episodes")
             
     # If ID is sent as a query parameter
-    elif episode_id:
-        stmt = sa.select(Episode).where(Episode.id == episode_id)
+    elif ID:
+        stmt = sa.select(Episode).where(Episode.id == ID)
 
         with orm.Session(ENGINE) as session:
-            eps = session.scalars(stmt)
+            eps = session.scalars(stmt).all()
             res = []
             if eps and series_name:
                 for ep in eps:
@@ -467,7 +560,7 @@ def find_episodes(
                 if res:
                     return res
                 else:
-                    raise HTTPException(status_code=404, detail=f"ID={episode_id} not found in Episodes of series '{series_name}'")
+                    raise HTTPException(status_code=404, detail=f"ID={ID} not found in Episodes of series '{series_name}'")
             if eps and series_id:
                 for ep in eps:
                     if ep.series_id == series_id:
@@ -475,144 +568,291 @@ def find_episodes(
                 if res:
                     return res
                 else:
-                    raise HTTPException(status_code=404, detail=f"ID={episode_id} not found in Episodes in series with ID '{series_id}'")
+                    raise HTTPException(status_code=404, detail=f"ID={ID} not found in Episodes in series with ID '{series_id}'")
             else:
-                raise HTTPException(status_code=404, detail=f"ID={episode_id} not found in Episodes or not associated with episode")
+                raise HTTPException(status_code=404, detail=f"ID={ID} not found in Episodes or not associated with episode")
             
     # If neither, tell the client they need to specify at least one
     else:
-        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
+        raise HTTPException(status_code=400, detail="Episode's Name or ID must be specified in query parameters")
     
             
-def find_genre(name: str) -> dict:
+def find_genre(
+    name: Optional[str] = Query(None, description="Genre name"), 
+    ID: Optional[int] = Query(None, description="Genre name")
+) -> dict:
     """Find a given genre.
 
     Args:
-        name (str): The name of the genre. This is a path paramenter.
+        name (str): The name of the genre. This is a query paramenter.
+        ID (int): The ID of the genre. This is a query paramenter.
 
     Returns:
         dict: Either the dict of the genre or a message if not found.
     """
-    stmt = sa.select(Genre).where(Genre.name == name)
-        # Genre name is unique, so no need for limit
+    # If genre specified by name
+    if name:
+        stmt = sa.select(Genre).where(Genre.name == name)
+            # Genre name is unique, so no need for limit
+
+        with orm.Session(ENGINE) as session:
+            g = session.scalar(stmt)
+            if g:
+                return g.to_dict()
+            else:
+                raise HTTPException(status_code=404, detail=f"Genre '{name}' not found")
     
-    with orm.Session(ENGINE) as session:
-        g = session.scalar(stmt)
-        if g:
-            return g.to_dict()
-        else:
-            raise HTTPException(status_code=404, detail=f"Genre '{name}' not found")
+    # By ID
+    elif ID:
+        stmt = sa.select(Genre).where(Genre.id == ID)
+
+        with orm.Session(ENGINE) as session:
+            g = session.scalar(stmt)
+            if g:
+                return g.to_dict()
+            else:
+                raise HTTPException(status_code=404, detail=f"Genre '{name}' not found")
+            
+    else:
+        raise HTTPException(status_code=400, detail="Episode's Name or ID must be specified in query parameters")
 
 
 # RATING METHODS # 
         
-def rate_movie(raw: RawRating, name: str) -> dict:
+def rate_movie(
+    raw: RawRating, 
+    name: Optional[str] = Query(None, description="Movie name"), 
+    ID: Optional[int] = Query(None, description="Movie ID")
+) -> dict:
     """Funciton to add a user rating to a movie.
 
     Args:
         raw (RawRating): The json payload from the function parsed as Pydantic Base Model.
-        name (str): Name of the movie. Path parameter.
+        name (str): Name of the movie. Query parameter.
+        ID (int): ID of the movie. Query parameter.
 
     Returns:
         dict: Message indicating success.
     """
+    # Process rating before the rest
     score = raw.score
     review = raw.review if raw.review else None
     if score > 5 or score < 1:
         raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
     rating = Rating(score=score, review=review)
     
-    stmt = sa.select(Movie).where(Movie.name==name).order_by(Movie.id).limit(1)
-        # If there are movies that share a name
-    
-    with orm.Session(ENGINE) as session:
-        movie = session.scalar(stmt)
-        if movie:
-            movie.ratings.append(rating)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"Movie '{name}' not found.")
-    
-    if review:
-        return {
-            "message": f"The movie '{name}' has been given a rating of {score} with a review"
-        }
-    else:
-        return {
-            "message": f"The movie '{name}' has been given a rating of {score}"
-        }
+    # If movie specified by name
+    if name:
+        stmt = sa.select(Movie).where(Movie.name==name).order_by(Movie.id).limit(1)
+            # If there are movies that share a name
 
+        with orm.Session(ENGINE) as session:
+            movie = session.scalar(stmt)
+            if movie:
+                movie.ratings.append(rating)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Movie '{name}' not found.")
+
+        if review:
+            return {
+                "message": f"The movie '{name}' has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The movie '{name}' has been given a rating of {score}"
+            }
+    
+    # If movie specified by ID
+    elif ID:
+        stmt = sa.select(Movie).where(Movie.id==ID)
+        with orm.Session(ENGINE) as session:
+            movie = session.scalar(stmt)
+            if movie:
+                movie.ratings.append(rating)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a movie.")
         
-def rate_series(raw: RawRating, name: str) -> dict:
+        if review:
+            return {
+                "message": f"The movie of ID {ID} has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The movie of {ID} has been given a rating of {score}"
+            }
+    
+    # Tell the client to specify by ID or by name
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
+        
+        
+def rate_series(
+    raw: RawRating, 
+    name: Optional[str] = Query(None, description="Series name"),
+    ID: Optional[int] = Query(None, description="Series ID")
+) -> dict:
     """Adds a user rating to a given series.
 
     Args:
         raw (RawRating): Json Payload parse as pydantic model.
-        name (str): Name of the series. Path paramenter.
+        name (str): Name of the series. Query paramenter.
+        ID (int): ID of the series. Query paramenter.
 
     Returns:
         dict: A message indicationg sucess.
     """
+    # Process rating before the rest
     score = raw.score
     review = raw.review if raw.review else None
     if score > 5 or score < 1:
         raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
     rating = Rating(score=score, review=review)
     
-    stmt = sa.select(Series).where(Series.name==name)
-    
-    with orm.Session(ENGINE) as session:
-        series = session.scalar(stmt)
-        if series:
-            series.ratings.append(rating)
-            session.commit()
+    # If series specified by name
+    if name:
+        stmt = sa.select(Series).where(Series.name==name).order_by(Series.id).limit(1)
+            # If there are series that share a name
+
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(stmt)
+            if series:
+                series.ratings.append(rating)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Series '{name}' not found.")
+
+        if review:
+            return {
+                "message": f"The series '{name}' has been given a rating of {score} with a review"
+            }
         else:
-            raise HTTPException(status_code=404, detail=f"Series '{name}' not found.")
+            return {
+                "message": f"The series '{name}' has been given a rating of {score}"
+            }
     
-    if review:
-        return {
-            "message": f"The series '{name}' has been given a rating of {score} with a review"
-        }
+    # If series specified by ID
+    elif ID:
+        stmt = sa.select(Series).where(Series.id==ID)
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(stmt)
+            if series:
+                series.ratings.append(rating)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a series.")
+        
+        if review:
+            return {
+                "message": f"The series of ID {ID} has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The series of ID {ID} has been given a rating of {score}"
+            }
+    
+    # Tell the client to specify by ID or by name
     else:
-        return {
-            "message": f"The series '{name}' has been given a rating of {score}"
-        }    
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
 
         
-def rate_episode(raw: RawRating, series_name: str, name: str) -> dict:
+def rate_episode(
+    raw: RawRating, 
+    series_name: Optional[str] = Query(None, description="Series name"),
+    series_id: Optional[int] = Query(None, description="Series ID"),
+    name: Optional[str] = Query(None, description="Episode name"),
+    ID: Optional[int] = Query(None, description="Episode ID")
+) -> dict:
     """Adds a user ratings to a given episodes
 
     Args:
         raw (RawRating): Parsed Json payload.
-        series_name (str): Name of the series. Path parameter.
-        name (str): Name of the Episode. Path parameter.
+        series_name (str): Name of the series. Query parameter.
+        series_ID (int): ID of the series. Query parameter.
+        name (str): Name of the Episode. Query parameter.
+        ID (int): Name of the Episode. Query parameter.
 
     Returns:
         dict: A message indicating success.
     """
+    # Process rating before the rest
     score = raw.score
     review = raw.review if raw.review else None
     if score > 5 or score < 1:
         raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
     rating = Rating(score=score, review=review)
-    stmt = sa.select(Episode).where(Episode.name==name)
     
-    with orm.Session(ENGINE) as session:
-        eps = session.scalars(stmt) # If many eps with same name
-        for ep in eps:  # Check if each ep is in the series
-            if ep.series.name == series_name:   # if so add the rating.
-                ep.ratings.append(rating)
-                session.commit()
-                if review:
-                    return {
-                        "message": f"The episode '{name}' has been given a rating of {score} with a review"
-                    }
+    # If episode specified by name
+    if name:
+        stmt = sa.select(Episode).where(Episode.name==name).order_by(Episode.id).limit(1)
+            # If there are episodes that share a name
+        with orm.Session(ENGINE) as session:
+            ep = session.scalar(stmt)
+            if ep:
+                if series_name:
+                    if ep.series.name == series_name:
+                        ep.ratings.append(rating)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in '{series_name}'.")
+                elif series_id:
+                    if ep.series_id == series_id:
+                        ep.ratings.append(rating)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series wiht ID {series_id}.")
                 else:
-                    return {
-                        "message": f"The episode '{name}' has been given a rating of {score}"
-                    }
+                    ep.ratings.append(rating)
+                    session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Episode '{name}' not found.")
+
+        if review:
+            return {
+                "message": f"The episode '{name}' has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The episode '{name}' has been given a rating of {score}"
+            }
     
-    raise HTTPException(status_code=404, detail=f"The episode '{name}' is not in the series '{series_name}'")
+    # If episode specified by ID
+    elif ID:
+        stmt = sa.select(Episode).where(Episode.id==ID)
+        with orm.Session(ENGINE) as session:
+            ep = session.scalar(stmt)
+            if ep:
+                if series_name:
+                    if ep.series.name == series_name:
+                        ep.ratings.append(rating)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode of {ID} not found in '{series_name}'.")
+                elif series_id:
+                    if ep.series_id == series_id:
+                        ep.ratings.append(rating)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode of {ID} nto found in series with ID {series_id}.")
+                else:
+                    ep.ratings.append(rating)
+                    session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with an episode.")
+        
+        if review:
+            return {
+                "message": f"The episode wiht ID {ID} has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The episode with ID {ID} has been given a rating of {score}"
+            }
+    
+    # Tell the client to specify by ID or by name
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
 
 
 # ADDING METHODS #
@@ -631,7 +871,7 @@ def add_movie(raw: RawMovie) -> dict:
     message = ""
     
     with orm.Session(ENGINE) as session:
-        genres = session.scalars(gnr_stmt)
+        genres = session.scalars(gnr_stmt).all()
         if genres:  # if the genres are found, add them to the movie object.
             m.genres.extend(genres)
         else:   # the admin has to create each genre manually
@@ -731,52 +971,104 @@ def add_genre(raw: RawGenre) -> dict:
 
 # REMOVING METHODS #   
 
-def remove_movie(name: str) -> dict:
+def remove_movie(
+    name: Optional[str] = Query(None, description="Movie name"), 
+    ID: Optional[int] = Query(None, description="Movie ID")
+) -> dict:
     """Function to remove a movie from the catalog.
 
     Args:
-        name (str): The name of the movie to be deleted. Path parameter.
+        name (str): The name of the movie to be deleted. Query parameter.
+        ID (int): The ID of the movie to be deleted. Query parameter.
 
     Returns:
         dict: A message indicating the movie has been deleted.
     """
-    stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id).limit(1)
-        # limit to only the top result
+    # If movie specified by name
+    if name:
+        stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id).limit(1)
+            # limit to only the top result
 
-    with orm.Session(ENGINE) as session:
-        movie = session.scalar(stmt)
-        if movie:
-            session.delete(movie)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in movies")
+        with orm.Session(ENGINE) as session:
+            movie = session.scalar(stmt)
+            if movie:
+                session.delete(movie)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in movies")
             
-    return {"message": f"Movie '{name}' has been deleted"}
+        return {"message": f"Movie '{name}' has been deleted"}
+    
+    # If movie specified by ID
+    elif ID:
+        stmt = sa.select(Movie).where(Movie.id == ID)
+        
+        with orm.Session(ENGINE) as session:
+            movie = session.scalar(stmt)
+            if movie:
+                session.delete(movie)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or not associated with a movie")
+        
+        return {"message": f"Movie with ID{ID} has been deleted"}
+    
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
             
             
-def remove_series(name: str) -> dict:
+def remove_series(
+    name: Optional[str] = Query(None, description="Series name"), 
+    ID: Optional[int] = Query(None, description="Series ID")
+) -> dict:
     """Removes a series from the catalog.
 
     Args:
-        name (str): The name of the series to be removed. Path parameter.
+        name (str): The name of the series to be removed. Query parameter.
+        ID (int): The ID of the series to be removed. Query parameter.
 
     Returns:
         dict: A message indicating a succesful deletion.
     """
-    stmt = sa.select(Series).where(Series.name == name).order_by(Series.id).limit(1)
+    # If series specified by name
+    if name:
+        stmt = sa.select(Series).where(Series.name == name).order_by(Series.id).limit(1)
+            # limit to only the top result
+
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(stmt)
+            if series:
+                session.delete(series)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in series")
+            
+        return {"message": f"Series '{name}' has been deleted"}
     
-    with orm.Session(ENGINE) as session:
-        series = session.scalar(stmt)
-        if series:
-            session.delete(series)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in series")
+    # If movie specified by ID
+    elif ID:
+        stmt = sa.select(Series).where(Series.id == ID)
+        
+        with orm.Session(ENGINE) as session:
+            series = session.scalar(stmt)
+            if series:
+                session.delete(series)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or not associated with a series")
+        
+        return {"message": f"Series with ID {ID} has been deleted"}
+    
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
             
-    return {"message": f"Series '{name}' has been deleted"}
             
-            
-def remove_episode(name: str, series_name: str) -> dict:
+def remove_episode(
+    name: Optional[str] = Query(None, description="Episode name"), 
+    series_name: Optional[str] = Query(None, description="Series name"),
+    ID: Optional[int] = Query(None, description="Episode ID"),
+    series_id: Optional[int] = Query(None, description="Series ID")
+) -> dict:
     """Removes an episode from the database.
 
     Args:
@@ -786,46 +1078,110 @@ def remove_episode(name: str, series_name: str) -> dict:
     Returns:
         dict: Message indicating a succesfule deletion if so.
     """
-    stmt = sa.select(Episode).where(Episode.name == name).order_by(Episode.id).limit(1)
+    # If episode specified by name
+    if name:
+        stmt = sa.select(Episode).where(Episode.name==name).order_by(Episode.id).limit(1)
+            # If there are episodes that share a name
+        with orm.Session(ENGINE) as session:
+            ep = session.scalar(stmt)
+            if ep:
+                if series_name:
+                    if ep.series.name == series_name:
+                        session.delete(ep)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in '{series_name}'.")
+                elif series_id:
+                    if ep.series_id == series_id:
+                        session.delete(ep)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series wiht ID {series_id}.")
+                else:
+                    session.delete(ep)
+                    session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Episode '{name}' not found.")
+
+        return {"message": f"The Episode '{name}' has been deleted"}
     
-    with orm.Session(ENGINE) as session:
-        ep = session.scalar(stmt)
-        if ep and ep.series.name == series_name:
-            session.delete(ep)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in the episodes of the series: '{series_name}'")
-            
-    return {
-        "message": f"Episode '{name}' has been deleted from series '{series_name}'"
-    }
+    # If episode specified by ID
+    elif ID:
+        stmt = sa.select(Episode).where(Episode.id==ID)
+        with orm.Session(ENGINE) as session:
+            ep = session.scalar(stmt)
+            if ep:
+                if series_name:
+                    if ep.series.name == series_name:
+                        session.delete(ep)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode of {ID} not found in '{series_name}'.")
+                elif series_id:
+                    if ep.series_id == series_id:
+                        session.delete(ep)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode of {ID} nto found in series with ID {series_id}.")
+                else:
+                    session.delete(ep)
+                    session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with an episode.")
+        
+        return {"message": f"The episode with ID {ID} has been deleted"}
+    
+    # Tell the client to specify by ID or by name
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
     
     
-def remove_genre(name: str) -> dict:
+def remove_genre(
+    name: Optional[str] = Query(None, description="Genre name"), 
+    ID: Optional[int] = Query(None, description="Genre ID")
+) -> dict:
     """Removes a given genre from the catalog.
 
     Args:
-        name (str): The name of the genre
+        name (str): The name of the genre. Query parameter.
 
     Returns:
         dict: Message indicating a successfult deletion if so
     """
-    stmt = sa.select(Genre).where(Genre.name == name)   # name is unique
-    
-    with orm.Session(ENGINE) as session:
-        g = session.scalar(stmt)
-        if g:
-            session.delete(g)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"'{name}' not found in the catalog genres")
-            
-    return {"message": f"Genre '{name}' has been deleted"}
+    if name:
+        stmt = sa.select(Genre).where(Genre.name == name)   # name is unique
 
+        with orm.Session(ENGINE) as session:
+            g = session.scalar(stmt)
+            if g:
+                session.delete(g)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"'{name}' not found in the catalog genres")
+
+        return {"message": f"Genre '{name}' has been deleted"}
+    elif ID:
+        stmt = sa.select(Genre).where(Genre.id == ID)   # ID is unique
+
+        with orm.Session(ENGINE) as session:
+            g = session.scalar(stmt)
+            if g:
+                session.delete(g)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found in the catalog genres")
+
+        return {"message": f"Genre of ID {ID} has been deleted"}
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
 
 # UPDATING METHODS #
 
-def update_movie(raw: UpdateMovie, name: str) -> dict:
+def update_movie(
+    raw: UpdateMovie, 
+    name: Optional[str] = Query(None, description="Movie name"),
+    ID: Optional[int] = Query(None, description="Movie ID"),
+) -> dict:
     """Update a movie object, any of its attributes can be changed.
 
     Args:
@@ -835,22 +1191,52 @@ def update_movie(raw: UpdateMovie, name: str) -> dict:
     Returns:
         dict: Message indicating update.
     """
-    stmt = sa.select(Movie).where(Movie.name == name).order_by(Movie.id).limit(1)
+    # If movie specified by name
+    if name:
+        stmt = sa.select(Movie).where(Movie.name==name).order_by(Movie.id).limit(1)
+            # If there are movies that share a name
+
+        with orm.Session(ENGINE) as session:
+            m = session.scalar(stmt)
+            if m:
+                # Dump json into a payload
+                update_data = raw.model_dump(exclude_unset=True)
+                # Iterate through the payload updating the reguired values
+                for key, value in update_data.items():
+                    setattr(m, key, value)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Movie '{name}' not found")
+
+        return {"message": f"The movie '{name}' has been updated"}
     
-    with orm.Session(ENGINE) as session:
-        m = session.scalar(stmt)
-        if m:
-            update_data = raw.model_dump(exclude_unset=True)
-            for key, value in update_data.items():
-                setattr(m, key, value)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"Movie '{name}' not found")
+    # If movie specified by ID
+    elif ID:
+        stmt = sa.select(Movie).where(Movie.id==ID)
+        with orm.Session(ENGINE) as session:
+            m = session.scalar(stmt)
+            if m:
+                # Dump json into a payload
+                update_data = raw.model_dump(exclude_unset=True)
+                # Iterate through the payload updating the reguired values
+                for key, value in update_data.items():
+                    setattr(m, key, value)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a movie.")
         
-    return {"message": f"Movie '{name}' has been updated"}
+        return {"message": f"The movie of ID {ID} has been updated"}
+    
+    # Tell the client to specify by ID or by name
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
 
 
-def update_series(raw: UpdateSeries, name: str) -> dict:
+def update_series(
+    raw: UpdateSeries, 
+    name: Optional[str] = Query(None, description="Series name"),
+    ID: Optional[int] = Query(None, description="Series ID")
+) -> dict:
     """Update any attributes of series object in the catalog.
 
     Args:
@@ -860,77 +1246,189 @@ def update_series(raw: UpdateSeries, name: str) -> dict:
     Returns:
         dict: A message indicating a successful update.
     """
-    stmt = sa.select(Series).where(Series.name == name).order_by(Series.id).limit(1)
+    # If series specified by name
+    if name:
+        stmt = sa.select(Series).where(Series.name==name).order_by(Series.id).limit(1)
+            # If there are series that share a name
+
+        with orm.Session(ENGINE) as session:
+            s = session.scalar(stmt)
+            if s:
+                # Dump json into a payload
+                update_data = raw.model_dump(exclude_unset=True)
+                # Iterate through the payload updating the reguired values
+                for key, value in update_data.items():
+                    setattr(s, key, value)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Series '{name}' not found")
+
+        return {"message": f"The series '{name}' has been updated"}
     
-    with orm.Session(ENGINE) as session:
-        s = session.scalar(stmt)
-        if s:
-            # dump the json payload into a dictionary
-            update_data = raw.model_dump(exclude_unset=True)
-            # iterate through the dicitnary updating the given attributes.
-            for key, value in update_data.items():
-                setattr(s, key, value)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail= f"Series '{name}' not found")
+    # If series specified by ID
+    elif ID:
+        stmt = sa.select(Series).where(Series.id==ID)
+        with orm.Session(ENGINE) as session:
+            s = session.scalar(stmt)
+            if s:
+                # Dump json into a payload
+                update_data = raw.model_dump(exclude_unset=True)
+                # Iterate through the payload updating the reguired values
+                for key, value in update_data.items():
+                    setattr(s, key, value)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a series.")
         
-    return {"message": f"Series '{name}' has been updated"}
+        return {"message": f"The series of ID {ID} has been updated"}
+    
+    # Tell the client to specify by ID or by name
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
 
 
-def update_episode(raw: UpdateEpisode, name: str, series_name: str) -> dict:
+def update_episode(
+    raw: UpdateEpisode, 
+    name: Optional[str] = Query(None, description="Episode name"), 
+    ID: Optional[int] = Query(None, description="Episode ID"),
+    series_name: Optional[str] = Query(None, description="Series name"),
+    series_id: Optional[int] = Query(None, description="Series ID")
+) -> dict:
     """Updates the attributes of an episode in a given series.
 
     Args:
         raw (UpdateEpisode): Parsed JSON Payload with new attributes.
-        name (str): Actual (old) Name of the Episode. Path parameter.
-        series_name (str): Name of the Series. Path parameter.
+        name (str): Actual (old) Name of the Episode. Query parameter.
+        ID (Int): ID of the Episode. Query parameter.
+        series_name (str): Name of the Series. Query parameter.
+        series_id (str): ID of the Series. Query parameter.
 
     Returns:
         dict: A message indicating a successful update.
     """
-    stmt = (
-        sa.select(Episode)
-        .where(Episode.name == name)
-        .order_by(Episode.id)
-        .limit(1)
-    )
+    # If episode specified by name
+    if name:
+        stmt = (
+            sa.select(Episode)
+            .where(Episode.name == name)
+            .order_by(Episode.id)
+            .limit(1)
+        )
+
+        with orm.Session(ENGINE) as session:
+            ep = session.scalar(stmt)
+            if ep:
+                if series_name:
+                    if ep.series.name == series_name:
+                        # get request into dict
+                        update_data = raw.model_dump(exclude_unset=True)
+                        # iterate through the dict updating where necessary
+                        for key, value in update_data.items():
+                            setattr(ep, key, value)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series '{series_name}'")
+                elif series_id:
+                    if ep.series_id== series_id:
+                        # get request into dict
+                        update_data = raw.model_dump(exclude_unset=True)
+                        # iterate through the dict updating where necessary
+                        for key, value in update_data.items():
+                            setattr(ep, key, value)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series with ID {series_id}")
+            else:
+                raise HTTPException(status_code=404, detail=f"Episode '{name}' not found")
+
+        return {"message": f"Episode '{name}' has been updated"}
     
-    with orm.Session(ENGINE) as session:
-        ep = session.scalar(stmt)
-        if ep and ep.series.name == series_name:
-            # get request into dict
-            update_data = raw.model_dump(exclude_unset=True)
-            # iterate through the dict updating where necessary
-            for key, value in update_data.items():
-                setattr(ep, key, value)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series '{series_name}'")
+    # If specified by ID
+    elif ID:
+        stmt = sa.select(Episode).where(Episode.id == ID)
 
-    return {"message": f"Episode '{name}' in series '{series_name}' has been updated"}
+        with orm.Session(ENGINE) as session:
+            ep = session.scalar(stmt)
+            if ep:
+                if series_name:
+                    if ep.series.name == series_name:
+                        # get request into dict
+                        update_data = raw.model_dump(exclude_unset=True)
+                        # iterate through the dict updating where necessary
+                        for key, value in update_data.items():
+                            setattr(ep, key, value)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode with ID {ID} not found in series '{series_name}'")
+                elif series_id:
+                    if ep.series_id== series_id:
+                        # get request into dict
+                        update_data = raw.model_dump(exclude_unset=True)
+                        # iterate through the dict updating where necessary
+                        for key, value in update_data.items():
+                            setattr(ep, key, value)
+                        session.commit()
+                    else:
+                        raise HTTPException(status_code=404, detail=f"Episode with ID {ID} not found in series with ID {series_id}")
+            else:
+                raise HTTPException(status_code=404, detail=f"Episode with ID {ID} not found")
+
+        return {"message": f"Episode with ID {ID} has been updated"}
+    
+    # Specify name or ID
+    else:
+       raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
 
 
-def update_genre(raw: RawGenre, name: str) -> dict:
+
+def update_genre(
+    raw: RawGenre, 
+    name: Optional[str] = Query(None, description="Genre name"),
+    ID: Optional[str] = Query(None, description="Genre ID")
+) -> dict:
     """Updates teh attributes (name) of genre in the catalog.
 
     Args:
         raw (RawGenre): Parsed JSON payload with the replacements.
-        name (str): Actual (Old) name of the genre
+        name (str): Actual (Old) name of the genre. Query parameter
 
     Returns:
         dict: A message indicating a succesful response.
     """
-    stmt = sa.select(Genre).where(Genre.name == name).order_by(Genre.id).limit(1)
+    # If specified by name
+    if name:
+        stmt = sa.select(Genre).where(Genre.name == name).order_by(Genre.id).limit(1)
     
-    with orm.Session(ENGINE) as session:
-        g = session.scalar(stmt)
-        if g:
-            # same as above
-            update_data = raw.model_dump(exclude_unset=True)
-            for key, value in update_data.items():
-                setattr(g, key, value)
-            session.commit()
-        else:
-            raise HTTPException(status_code=404, detail=f"Genre '{name}' not found")
+        with orm.Session(ENGINE) as session:
+            g = session.scalar(stmt)
+            if g:
+                # same as above
+                update_data = raw.model_dump(exclude_unset=True)
+                for key, value in update_data.items():
+                    setattr(g, key, value)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Genre '{name}' not found")
         
-    return {"message": f"Genre '{name}' has been updated"}
+        return {"message": f"Genre '{name}' has been updated"}
+    
+    # IF specified by ID
+    elif ID:
+        stmt = sa.select(Genre).where(Genre.id == ID)
+    
+        with orm.Session(ENGINE) as session:
+            g = session.scalar(stmt)
+            if g:
+                # same as above
+                update_data = raw.model_dump(exclude_unset=True)
+                for key, value in update_data.items():
+                    setattr(g, key, value)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Genre of ID {ID} not found")
+        
+        return {"message": f"Genre '{name}' has been updated"}
+    
+    # Demand that the client... oh, wait... In the USA, the client is always right... crap
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")

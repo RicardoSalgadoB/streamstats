@@ -96,31 +96,31 @@ Documentation can also be accessed at `http://localhost:8000/docs`.
 - `GET  /episode/find`: Get a given episode of a given series. ID or Name  of both sent as query parameters.
 
 **All Content Retrieval Methods**
-- `GET  /content`: Retrieve a paginated list of movies and series.
-- `GET  /content/find`: Get details for a given movie or series.
+- `GET  /content`: Retrieve a paginated list of movies and series. 
+- `GET  /content/find`: Get details for a given movie or series. ID or Name sent as query parameters.
 
 **Rating Methods**
-- `POST /movies/{name}/rate`: Submit a rating for a movie.
-- `POST /series/{name}/rate`: Submit a rating for a series.
-- `POST /series/{series_name}/episodes/{name}/rate`: Submit a rating for the given episode of a series.
+- `POST /movies/rate`: Submit a rating for a movie. ID or Name sent as query parameters.
+- `POST /series/rate`: Submit a rating for a series. ID or Name sent as query parameters.
+- `POST /series/rate`: Submit a rating for the given episode of a series. ID or Name of both sent as query parameters.
 
 **Adding Content Methods**
 - `POST /movies`: Create a new movie. Accepts a json payload.
 - `POST /series`: Create a new series. Accepts a json payload.
-- `POST /series/{series_name}/episodes`: Create a new episode of a given series. Accepts a json payload.
+- `POST /episodes`: Create a new episode of a given series. Accepts a json payload.
 - `POST /genres`: Create a new genre. Accepts a json payload.
 
 **Delete Content Methods**
-- `DELETE /movies/{name}`: Delete a given movie.
-- `DELETE /series/{name}`: Delete a given series.
-- `DELETE /series/{series_name}/episodes/{name}`: Delte an episode of a given series.
-- `DELETE /genres/{name}`: Delete a given genre.
+- `DELETE /movies/remove`: Delete a given movie. ID or Name sent as query parameters.
+- `DELETE /series/remove`: Delete a given series. ID or Name sent as query parameters.
+- `DELETE /episodes/remove`: Delete an episode of a given series. ID or Name of both sent as query parameters.
+- `DELETE /genres/remove`: Delete a given genre. ID or Name sent as query parameters.
 
 **Update Content Methods**
-- `PATCH /movies/{name}`: Update a movie. Accepts a json payload.
-- `PATCH /series/{name}`: Update a series. Accepts a json payload.
-- `PATCH /series/{series_name}/episodes/{name}`: Update an episode of a given series. Accepts a json payload.
-- `PATCH /genres/{name}`: Update a genre. Accepts a json payload.
+- `PATCH /movies/update`: Update a movie. Accepts a json payload. ID or Name sent as query parameters.
+- `PATCH /series/update`: Update a series. Accepts a json payload. ID or Name sent as query parameters.
+- `PATCH /episodes/update`: Update an episode of a given series. Accepts a json payload. ID or Name of episode and series can be sent as query parameters.
+- `PATCH /genres/update`: Update a genre. Accepts a json payload. ID or Name sent as query parameters.
 
 ## Database Schemas
 The application's data is stored in a PostgreSQL 16 Database configured with the following schemas:
