@@ -12,687 +12,1068 @@ import sqlalchemy.orm as orm
 
 from app.models import Movie, Episode, Series, Genre
 
-from examples.fake_generator import generate_fake_title
-
-fake = Faker()
-
-places = [
-    "Monterrey",
-    "San Pedro",
-    "Guadalupe",
-    "Apodaca",
-    "Guadlajara",
-    "Tenochtitlan",
-    "Fallout",
-    "New Vegas",
-    "Old Vegas",
-    "Chilangolandia",
-    "Gringoland",
-    "Ferghana",
-    "Indo Kush",
-    "Bolsonaria",
-    "Colombia",
-    "Maracaibo",
-    "Easter Island",
-    "Luzern",
-    "Zurich",
-    "the Alps",
-    "Powhatan",
-    "Anderson Island",
-    "Colinas del Sabio",
-    "California",
-    "Utapau",
-    "a gerrymandered state",
-    "federal district",
-    "Mérida",
-    "Milwakke",
-    "Daytona",
-    "Henderson Field",
-    "Munchen",
-    "Osterreich",
-    "Munich",
-    "Boston",
-    "Harvard",
-    "MIT",
-    "CMU",
-    "Toronto",
-    "Ottawa",
-    "Taum Sauk",
-    "the Lower Reservoir",
-    "Los Angeles",
-    "Capri"
-]
-
-animals = [
-    "Cow",
-    "Fish",
-    "Antilope",
-    "Eagle",
-    "Lion",
-    "Seabird",
-    "Xenomorph",
-    "Seacow",
-    "Seapig",
-    "Monkey",
-    "Hawk",
-    "Panda",
-    "Polar Bear",
-    "Ant",
-    "Grasshooper",
-    "Wolf",
-    "Panther",
-    "Leopard"
-]
-
-criminal_adjectives = [
-    "Fast",
-    "Furious",
-    "Peaky",
-    "Bourbon",
-    "Pedagogic",
-    "Cruel",
-    "Inglorious",
-    "Blazing"
-]
-
-criminals = [
-    "Blinders",
-    "Killers",
-    "Murders",
-    "Scorpions",
-    "Psychopaths",
-    "Bastards",
-    "Drug Addicts",
-    "Blazers",
-    "Arsonists"
-]
-
-heist_organizers = [
-    "Ocean",
-    "Sky",
-    "Earth",
-    "Hell",
-    "Heaven"
-]
-
-superhero_names = [
-    "Cowman",
-    "Enderman",
-    "Fishman",
-    "Sealman",
-    "Tungstenman",
-    "Diamondwoman",
-    "Captain Oceania",
-    "Captain Europe",
-    "Captain Antartica",
-    "Purple Son",
-    "Titan",
-    "Metroman",
-    "Busman",
-    "Borg",
-    "Nicoooooooo Huuuuuuuuuulkenberg",
-    "Dudududu",
-    "Dodo",
-    "Raindeerman",
-    "Friendly Werewolf",
-    "Carolus Rex",
-    "Pooman",
-    "Doctor Salvation",
-    "Santa Monica",
-    "Blue Daughter",
-    "Red Velvet",
-    "Curiouos George",
-    "Captain Gold",
-    "Trebala",
-    "Harpy",
-    "Godess of Antioch"
-]
-
-body_parts = [
-    "back",
-    "eye",
-    "foot",
-    "tooth",
-    "nose",
-    "ear",
-    "knee",
-    "belly",
-    "arm",
-    "head",
-    "neck",
-    "crotch"
-]
-
-weapons = [
-    "Blade",
-    "Knife",
-    "Rifle",
-    "Gun",
-    "Pistol",
-    "Axe",
-    "Slate",
-    "Arch",
-    "Bow",
-    "Crossbow"
-]
-
-persons_doing = [
-    "Runners",
-    "Twisters",
-    "Kneedlers",
-    "Tricksters",
-    "Roamers",
-    "Sleepers",
-    "Creepers",
-    "Raiders",
-    "Goers",
-    "Jailers",
-    "Brushers",
-    "Hummers",
-    "Drimmers"
-]
-
-things1 = [
-    "Frying pans",
-    "Ketchup",
-    "Mayonnaise",
-    "Swords",
-    "Lands",
-    "Bracelets",
-    "Octopuses",
-    "Night",
-    "Twilight",
-    "Dead",
-    "Hells",
-    "Heaven",
-    "Long Table",
-    "Crimson Tide",
-    "Yellow Horde"
-]
-
-# Load secret variables
+# Load secrets
 load_dotenv()
 db_url = os.getenv("DB_URL")
 
-# Create an sql alchemy engine
+# Create a sqlalchemy engine
 ENGINE = sa.create_engine(db_url)
 
+# Instantiate Faker Object generator
+fake = Faker()
 
-# Class for weighted selection
+
+# Generate list of random stuff to add complexity
+places = [
+    "Monterrey", "San Pedro", "Guadalupe", "Apodaca", "Guadalajara", "Tenochtitlan",
+    "Fallout", "New Vegas", "Old Vegas", "Chilangolandia", "Gringoland", "Ferghana",
+    "Indo Kush", "Bolsonaria", "Colombia", "Maracaibo", "Easter Island", "Luzern",
+    "Zurich", "the Alps", "Powhatan", "Anderson Island", "Colinas del Sabio",
+    "California", "Utapau", "a gerrymandered state", "federal district", "Mérida",
+    "Milwaukee", "Daytona", "Henderson Field", "München", "Österreich", "Munich",
+    "Boston", "Harvard", "MIT", "CMU", "Toronto", "Ottawa", "Taum Sauk",
+    "the Lower Reservoir", "Los Angeles", "Capri"
+]
+
+animals = [
+    "Cow", "Fish", "Antelope", "Eagle", "Lion", "Seabird", "Xenomorph", "Seacow",
+    "Seapig", "Monkey", "Hawk", "Panda", "Polar Bear", "Ant", "Grasshopper",
+    "Wolf", "Panther", "Leopard", "Dragon", "Phoenix", "Griffin", "Unicorn"
+]
+
+criminal_adjectives = [
+    "Fast", "Furious", "Peaky", "Bourbon", "Pedagogic", "Cruel", "Inglorious",
+    "Blazing", "Ruthless", "Deadly", "Silent", "Vengeful", "Notorious"
+]
+
+criminals = [
+    "Blinders", "Killers", "Murderers", "Scorpions", "Psychopaths", "Bastards",
+    "Drug Addicts", "Blazers", "Arsonists", "Syndicate", "Cartel", "Brotherhood"
+]
+
+superhero_names = [
+    "Cowman", "Enderman", "Fishman", "Sealman", "Tungstenman", "Diamondwoman",
+    "Captain Oceania", "Captain Europe", "Captain Antarctica", "Purple Son",
+    "Titan", "Metroman", "Busman", "Borg", "Nico Hulkenberg", "Dudududu",
+    "Dodo", "Raindeerman", "Friendly Werewolf", "Carolus Rex", "Pooman",
+    "Doctor Salvation", "Santa Monica", "Blue Daughter", "Red Velvet",
+    "Curious George", "Captain Gold", "Trebala", "Harpy", "Goddess of Antioch"
+]
+
+weapons = ["Blade", "Knife", "Rifle", "Gun", "Pistol", "Axe", "Slate", "Arch", "Bow", "Crossbow"]
+
+body_parts = ["back", "eye", "foot", "tooth", "nose", "ear", "knee", "belly", "arm", "head", "neck", "crotch"]
+
+things = ["Frying pans", "Ketchup", "Mayonnaise", "Swords", "Lands", "Bracelets", "Octopuses", "Night", "Twilight", "Dead", "Hells", "Heaven", "Long Table", "Crimson Tide", "Yellow Horde"]
+
+
 class WeightedChoice:
-    def __init__(self, choice: dict[str, float], k:int = 1):
+    """Random Choices wrapper allowing for delayed chosing."""
+    def __init__(self, choice: dict[str, float], k: int = 1):
+        """
+        Constructor...
+        Args:
+            choice (dict[str, float]): Items as keys and weights as values.
+            k (int, optional): Number of choices to be returned.
+        """
         self.items = list(choice.keys())
         self.weights = list(choice.values())
         self.k = k
 
     def choose(self):
-        if self.k == 1:
-            return random.choices(self.items, weights=self.weights, k=self.k)[0]
-        else:
-            return random.choices(self.items, weights=self.weights, k=self.k)
+        return random.choices(self.items, weights=self.weights, k=self.k)
 
 
 class ContentGenerator:
+    """Abstract Class to generate content."""
     def __init__(self) -> None:
-        self.domains = WeightedChoice({
-            "Scripted": 0.9,
-            "Unscripted": 0.1
-        })
+        """
+        Initializes the content genenerator with a fixed amount of additional genres and a WeightedChoice for the main genres.
+        The additional genres and titles for each main genre are generated through WeightedChoices inside propierties.
+        """
+        self.additional_genres = max(random.randint(0, 5) - random.randint(0, 3), 0)
         
-        self.scripted_genres = WeightedChoice({
-            "Anthology": 0.018, # 1000/1000
-            "Art film": 0.003,
-            "Crime": 0.073,
-            "Experimental": 0.001,
-            "Exploitation": 0.012,
-            "Gothic": 0.001,
-            "Fantasy": 0.007,   # 892/100
-            "Musical":  0.006,
-            "Police": 0.003,
-            "Romance": 0.078,
-            "Serial": 0.005,    # 798/1000
-            "Cereal": 0.001,
-            "Social Problem": 0.001,
-            "Social": 0.064,
-            "Sports": 0.013,
-            "Telenovela": 0.048,    # 714/1000
-            "Téléroman": 0.028,
-            " THriller": 0.002,
-            "Action": 0.128,
-            "Adventure:": 0.078, 
-            "Animation": 0.100, # 430/1000
-            "Traditional Animation": 0.030,
-            "3D Animation": 0.013,
-            "CGI Animation": 0.018,
-            "Stop Motion": 0.001,
-            "Puppetry": 0.001,
-            "Comedy": 0.085,
-            "Mockumentary": 0.001,
-            "Parody": 0.008,    # 238/1000
-            "Satire": 0.003,
-            "Devotional": 0.028,
-            "Drama": 0.068,
-            "Docudrama": 0.003,
-            "Legal drama": 0.010,
-            "Medical Drama": 0.006, # 118/1000
-            "Melodrama": 0.016,
-            "Military": 0.014,
-            "Philosophical drama": 0.001,
-            "Psychological drama": 0.002,
-            "Political drama": 0.001,
-            "Teen drama": 0.001,    # 78/1000
-            "Alternate History": 0.001,
-            "Biopic": 0.001,
-            "Historical EPIC": 0.001,
-            "Historical event": 0.001,
-            "Historical fiction": 0.010,
-            "Period drama": 0.001,
-            "Period piece": 0.001,
-            "Horror": 0.006,
-            "Kaiju": 0.001,
-            "Mecha": 0.001,
-            "Giallo": 0.001,   # 43/1000
-            "Science Fiction": 0.025,
-            "Science Fantasy": 0.023,
-            "Fantastique": 0.001,
-            "Western": 0.002,
-            "": 0.001
+        # PRIMARY GENRES
+        self.genres = WeightedChoice({
+            "Action": 0.10,
+            "Adventure": 0.10,
+            "Animation": 0.10,
+            "Comedy":0.05,
+            "Crime": 0.05,
+            "Drama": 0.05,
+            "Fantasy": 0.05,
+            "Horror":0.06,
+            "Musical": 0.04,
+            "Romance": 0.07,
+            "Science_Fiction": 0.08,
+            "Sci-Fi": 0.01,
+            "Thriller": 0.02,
+            "Western": 0.11,
+            "Sports": 0.02,
+            "Documentary": 0.05,
+            "Reality": 0.04
         })
-        
-        self.unscripted_genres = WeightedChoice({
-            "Amateur": 0.01,
-            "Documentary": 0.20,
-            "Educacional": 0.03,
-            "Infomertial": 0.02,
-            "Talk show": 0.05,
-            "Variety": 0.03,
-            "Cocert": 0.01,
-            "Cooking show": 0.10,
-            "Game show": 0.10,
-            "Home renovation": 0.06,
-            "News": 0.05,
-            "Politcal Commentary": 0.01,
-            "Religious": 0.01,
-            "Stand-up Comedy": 0.02,
-            "Sports": 0.30,
-        })
-        
-        self.additional_genres = max(random.randint(0, 10) - random.randint(0, 6), 0)
 
-        self.crime_subgenres = WeightedChoice({
-            "Detective": 0.15,
-            "Noir": 0.05,
-            "Gangster": 0.30,
-            "Heist": 0.20,
-            "Hood": 0.10,
-            "Mystery": 0.15,
-            "Vigilante": 0.05,
-        })
-            
-        self.scifi_subgenres = WeightedChoice({
-            "Cyberpunk": 0.30,
-            "Dystopian": 0.01,
-            "Utopian": 0.09,
-            "Military": 0.20,
-            "Post Apocalyptic": 0.01,
-            "Space Opera": 0.05,
-            "Tech Noir": 0.02,
-            "Utopian": 0.18,
-            "Fantastique": 0.01,
-            "Gothic Sci-Fi": 0.01,
-            "New Wave": 0.05,
-            "Alien": 0.01,
-            "SciFi Horror": 0.05,
-            "Parallel universe": 0.01,
-        })
-            
-        self.anthology = {
+    # ACTION GENRE
+    @property
+    def action(self):
+        return {
             "name": random.choice([
-                f"The stories of {random.choice(places)}",
-                f"The year of {random.randint(1, 2100)}",
-                f"The month of the {random.choice(animals)}"
+                f"{fake.last_name()}: Maximum Velocity",
+                f"The {fake.color_name()} Storm",
+                f"Operation {fake.military_apo()}",
+                f"Code {fake.color_name()}",
+                f"The {random.choice(weapons)} of {random.choice(places)}",
+                f"Explosive {fake.word()}",
+                "Adrenaline Rush",
+                f"{fake.first_name()} Protocol"
             ]),
-            "secondary genres": WeightedChoice({
-                "Crime": 0.20,
-                "Mafia": 0.10,
-                "Detective": 0.20,
-                "Romance": 0.03,
-                "Adventure": 0.03,
-                "Fiction": 0.01,
-                "Political drama": 0.10,
+            "secondary_genres": WeightedChoice({
+                "Martial Arts": 0.25,
+                "Spy": 0.15,
                 "Military": 0.20,
-                "Science Fiction": 0.05,
-                "Western": 0.05,
-                "Cyberpunk": 0.03 
-            }, k=self.additional_genres)
-        }
-        
-        self.art_film= {
-            "name": random.choice([
-                "Water",
-                "Fire",
-                "Earth",
-                "Air",
-                "Uranium",
-                "Baguette",
-                "Croissant",
-                "Animals",
-                "Places",
-                random.choice(animals)
-            ])
-        }
-        
-        self.detective = {
-            "name": random.choice([
-                fake.name(),
-                fake.place_name(),
-                fake.administrative_unit(),
-                f"{fake.color()} Falcon",
-                f"{fake.color()} Phoenix"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Gong'an": 0.05,
-                "Romance": 0.20,
-                "Action": 0.35,
-                "Fantasy": 0.10,
-                "Science Fiction": 0.15,
-                str(self.scifi_subgenres.choose()): 0.15
-            }, k=self.additional_genres//3)
-        }
-        
-        self.noir = {
-            "name": random.choice([
-                fake.name(),
-                fake.place_name(),
-                fake.administrative_unit(),
-                f"{fake.color()} Falcon",
-                f"{fake.color()} Phoenix",
-                "Knives Out",
-                "Rush"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Gothic": 0.95,
-                "Romance": 0.01,
-                "Science Fiction": 0.01,
-                "Exploitation film": 0.01,
-                "Dark Fantasy": 0.01,
-                "Science Fantasy": 0.01
-            }, k=self.additional_genres//4)
-        }
-        
-        self.gangster = {
-            "name": random.choice([
-                f"The Ballad of {fake.full_name()}",
-                f"The {fake.last_name}",
-                f"{random.choice(criminal_adjectives)} {random.choice(criminals)}"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Irish Mafia": 0.20,
-                "Romani Mafia": 0.10,
-                "Italian Mafia": 0.40,
-                "Jewish Mafia": 0.05,
-                "Mumbai": 0.15,
-                "Yakuza": 0.10,
-                "Comedy": 0.10
-            }, k=self.additional_genres//2)
-        }
-        
-        self.heist = {
-            "name": random.choice([
-                f"{random.choice(heist_organizers)}' {random.randint(2, 100)}",
-                f"The {fake.color} {random.choice(animals)}",
-                f"A {fake.color} {random.choice(animals)}",
-            ]),
-            "secondary genres": WeightedChoice({
-                "Pirate": 0.10,
-                "Swashbuckler": 0.15,
-                "Science Fiction": 0.20,
-                "Distopian": 0.20,
-                "Romance": 0.30,
-                "Superhero": 0.05
-            }, k=self.additional_genres//3)
-        }
-        
-        self.hood = {
-            "name": random.choice([
-                "The Animals",
-                "Los Animales",
-                "Las Ojivas Místicas",
-                f"The {random.choice(animals)}s"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Romance": 0.2,
-                "Social Problem": 0.8,
-            }, k=self.additional_genres//5)
-        }
-        
-        self.mystery = {
-            "name": random.choice([
-                f"{fake.name()}: The Angels roar",
-                f"{fake.name()}: The Demons weep",
-                f"The Son of Mrs.{fake.name_female()}",
-                f"The Daughter of Mrs.{fake.name_female()}",
-            ]),
-            "secondary genres": WeightedChoice({
-                "Sports": 0.02,
-                "SciFi": 0.02,
-                "Fantasy": 0.02,
-                "Religious": 0.01,
-                "Comedy": 0.03,
-                "Romance": 0.10,
-                "Detective": 0.75,
-                "Social Problem": 0.05
-            })
-        }
-        
-        self.vigilante = {
-            "name": random.choice([
-                f"The Hero of {random.choice(places)}",
-                f"The Man in the Hood",
-                f"The Woman in the Hood",
-                f"The {random.choice(superhero_names)}",
-                f"Corporate Socalism"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Superhero": 0.60,
-                "Absurdist": 0.02,
-                "Social Problem": 0.03,
-                "Religious": 0.01,
-                "Gothic": 0.30,
-                "Gangster": 0.04,
-                "Cyberpunk": 0.01
-            }, k=self.additional_genres)
-        }
-        
-        self.exploitation = {
-            "name": random.choice([
-                f"The body of {fake.name()}",
-                f"The Culture of {random.choice(places)}",
-                f"Sweet sweet{random.choice(body_parts)}",
-                f"The Van of {fake.name()}",
-                "Ahhh... Zombie",
-                "Por unos pesos más",
-                "For a few weights more",
-            ]),
-            "secondary genres": WeightedChoice({
-                "Social Problem": 0.05,
-                "Historical drama": 0.10,
-                "Western": 0.10,
-                "Zombie": 0.50,
-                "Blaxploitation": 0.02,
-                "Sexploitation": 0.02,
-                "Slasher": 0.06,
-                "Vansploitation": 0.05,
-                "Adult Comedy": 0.10
-            }, k=self.additional_genres//2)
-        }
-        
-        self.gothic = {
-            "name": random.choice([
-                f"{fake.first_name()}stein",
-                f"{random.choice(list('DFSTYBCZL'))}cula",
-                f"{random.choice(weapons)} {random.choice(persons_doing)}"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Gothic Horror": 0.50,
-                "Gothic Romance": 0.25,
-                "Gothic Science Fiction": 0.05,
-                "Urban Gothic": 0.07,
-                "Suburban Gothic": 0.05,
-                "Rural Gothic": 0.05,
-                "Religious": 0.03
-            }, k=self.additional_genres//2) 
-        }
-        
-        self.fantasy = {
-            "name": random.choice([
-                str(fake.name()),
-                f"The Chroncles of {random.choice(places)}",
-                f"The Lord of the {random.choice(things1)}",
-                f"The Lord of the Castle in {fake.plant_name()}",
-                "Kobols",
-                "Dwarven Cities",
-                "The Prince",
-                "The Princes",
-                "The Princess",
-                "The Princesses",
-                "The Hammerhead"
-                f"The whimsical origin of {animals}",
-                f"The ancient past of {places}",
-                f"The Kingdom of the {fake.last_name()}"
-                f"The Nibelungians",
-                "The Descendants of Achilles",
-                f"{fake.file_name()} the Zombie slayer",
-                f"{fake.file_name()} the Vampire slayer",
-                f"{fake.file_name()} the Werewolf slayer",
-                f"{fake.file_name()} the Demon slayer",
-                "Not so natural",
-                f"Game of {animals}"
-            ]),
-            "secondary genres": WeightedChoice({
-                "Contemporary fantasy": 0.10,
-                "Urban fantasy": 0.05,
-                "Dark fantasy": 0.10,
-                "High fantasy": 0.15,
-                "Fantasy comedy": 0.05,
-                "Fairy tale": 0.10,
-                "Animation": 0.10,
-                "Historical fantasy": 0.05,
-                "Romance": 0.20,
-                "Adventure": 0.08,
-                "Military": 0.02
+                "Superhero": 0.10,
+                "Disaster": 0.08,
+                "Chase": 0.12,
+                "Revenge": 0.10
             }, k=self.additional_genres)
         }
 
+    # ADVENTURE GENRE
+    @property
+    def adventure(self):
+        return {
+            "name": random.choice([
+                f"Journey to {random.choice(places)}",
+                f"The Quest for the {fake.color_name()} {random.choice(things)}",
+                f"Treasure of {fake.last_name()} Island",
+                f"The {fake.color_name()} Compass",
+                f"Expedition {random.randint(1, 100)}",
+                f"The Map of {random.choice(places)}",
+                "Into the Unknown",
+                f"The {random.choice(animals)} Trail"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Jungle": 0.20,
+                "Desert": 0.15,
+                "Ocean": 0.10,
+                "Mountain": 0.5,
+                "Snow": 0.10,
+                "Treasure Hunt": 0.10,
+                "Pirate": 0.15,
+                "Survival": 0.15
+            }, k=self.additional_genres)
+        }
+
+    # ANIMATION GENRE
+    @property
+    def animation(self):
+        return {
+            "name": random.choice([
+                f"The Adventures of {fake.first_name()}",
+                f"{random.choice(animals)} Tales",
+                f"Magic in {random.choice(places)}",
+                f"The {fake.color_name()} Kingdom",
+                f"Dancing {random.choice(animals)}s",
+                f"The Singing {random.choice(things)}",
+                "Cartoon Chronicles",
+                f"Studio {fake.last_name()}"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Traditional 2D": 0.30,
+                "CGI": 0.15,
+                "3D": 0.20,
+                "Stop Motion": 0.10,
+                "Mixed Media": 0.08,
+                "Puppetry": 0.05,
+                "Rotoscoping": 0.12
+            }, k=self.additional_genres)
+        }
+
+    # COMEDY GENRE
+    @property
+    def comedy(self):
+        return {
+            "name": random.choice([
+                f"The Funny Side of {fake.job()}",
+                f"{fake.first_name()}'s Big Mistake",
+                f"Chaos in {random.choice(places)}",
+                f"The {fake.color_name()} Comedy",
+                f"Laughing with {random.choice(animals)}s",
+                f"The Misadventures of {fake.name()}",
+                "Comedy Gold",
+                f"Silly {fake.word()}s"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Romantic Comedy": 0.25,
+                "Slapstick": 0.15,
+                "Dark Comedy": 0.20,
+                "Screwball": 0.10,
+                "Parody": 0.15,
+                "Satire": 0.15
+            }, k=self.additional_genres)
+        }
+
+    # DRAMA GENRE
+    @property
+    def drama(self):
+        return {
+            "name": random.choice([
+                f"The Heart of {fake.name()}",
+                f"Tears in {random.choice(places)}",
+                f"The {fake.color_name()} Letter",
+                f"Stories from {fake.street_name()}",
+                f"The Weight of {fake.word()}",
+                f"Memories of {fake.name()}",
+                "Emotional Journey",
+                f"The Price of {fake.word()}"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Family Drama": 0.25,
+                "Psychological Drama": 0.20,
+                "Social Drama": 0.15,
+                "Political Drama": 0.10,
+                "Criminal Drama": 0.02,
+                "Legal Drama": 0.10,
+                "Medical Drama": 0.18
+            }, k=self.additional_genres)
+        }
+
+    # HORROR GENRE
+    @property
+    def horror(self):
+        return {
+            "name": random.choice([
+                f"The {fake.color_name()} Terror",
+                f"Nightmare in {random.choice(places)}",
+                f"The Haunting of {fake.street_name()}",
+                f"Screams from {fake.building_number()} {fake.street_name()}",
+                f"The {random.choice(body_parts)} Collector",
+                f"Dark {fake.word()}",
+                "Blood Moon Rising",
+                f"The {fake.color_name()} Shadow"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Slasher": 0.20,
+                "Supernatural": 0.25,
+                "Psychological Horror": 0.20,
+                "Zombie": 0.10,
+                "Vampire": 0.08,
+                "Werewolf": 0.05,
+                "Ghost": 0.12
+            }, k=self.additional_genres)
+        }
+
+    # MUSICAL GENRE
+    @property
+    def musical(self):
+        return {
+            "name": random.choice([
+                f"Songs from {random.choice(places)}",
+                f"The {fake.color_name()} Note",
+                f"Dancing in {fake.city()}",
+                f"Melody of {fake.name()}",
+                f"The Singing {random.choice(animals)}",
+                f"Rhythm of {fake.word()}",
+                "Broadway Dreams",
+                f"The {fake.color_name()} Symphony"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Broadway": 0.30,
+                "Jukebox Musical": 0.20,
+                "Rock Opera": 0.15,
+                "Dance Musical": 0.20,
+                "Biographical Musical": 0.15
+            }, k=self.additional_genres)
+        }
+
+    # ROMANCE GENRE
+    @property
+    def romance(self):
+        return {
+            "name": random.choice([
+                f"Love in {random.choice(places)}",
+                f"The {fake.color_name()} Rose",
+                f"{fake.first_name()} and {fake.first_name()}",
+                f"Hearts in {fake.city()}",
+                f"The Love of {fake.name()}",
+                f"Passion in {fake.month_name()}",
+                "Eternal Love",
+                f"Quantum {fake.word()}",
+                f"The {fake.color_name()} Wedding"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Romantic Comedy": 0.35,
+                "Historical Romance": 0.20,
+                "Contemporary Romance": 0.25,
+                "Paranormal Romance": 0.10,
+                "Erotic Romance": 0.10
+            }, k=self.additional_genres)
+        }
+
+    # SCIENCE FICTION GENRE
+    @property
+    def science_fiction(self):
+        return {
+            "name": random.choice([
+                f"2{random.randint(100, 999)}: The Future",
+                f"Galaxy {fake.lexify('???-###')}",
+                f"The {fake.color_name()} Planet",
+                f"Robots of {random.choice(places)}",
+                f"The {fake.word()} Station",
+                f"Quantum {fake.word()}",
+                "Space Odyssey",
+                f"The {fake.color_name()} Dimension"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Space Opera": 0.10,
+                "Science Fantasy": 0.15,
+                "Cyberpunk": 0.20,
+                "Dystopian": 0.20,
+                "Time Travel": 0.15,
+                "Alien Contact": 0.10,
+                "Post-Apocalyptic": 0.10
+            }, k=self.additional_genres)
+        }
+
+    # THRILLER GENRE
+    @property
+    def thriller(self):
+        return {
+            "name": random.choice([
+                f"The {fake.color_name()} Conspiracy",
+                f"Edge of {fake.word()}",
+                f"The {fake.word()} Protocol",
+                f"Danger in {random.choice(places)}",
+                f"The {fake.color_name()} Files",
+                f"Midnight {fake.word()}",
+                "The Final Hour",
+                f"The {fake.word()} Challenge",
+                f"Code {fake.color_name()}"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Psychological Thriller": 0.25,
+                "Political Thriller": 0.15,
+                "Techno Thriller": 0.20,
+                "Medical Thriller": 0.10,
+                "Legal Thriller": 0.15,
+                "Conspiracy Thriller": 0.15
+            }, k=self.additional_genres)
+        }
+
+    # WESTERN GENRE
+    @property
+    def western(self):
+        return {
+            "name": random.choice([
+                f"The Gunslinger of {random.choice(places)}",
+                f"Wild {fake.word()}",
+                f"The {fake.color_name()} Sheriff",
+                f"Sunset in {fake.city()}",
+                f"The {fake.word()} Gang",
+                f"Dust and {fake.word()}",
+                "High Noon Showdown",
+                f"The Ballad of {fake.name()}"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Spaghetti Western": 0.25,
+                "Revisionist Western": 0.20,
+                "Comedy Western": 0.15,
+                "Acid Western": 0.10,
+                "Space Western": 0.15,
+                "Contemporary Western": 0.15
+            }, k=self.additional_genres)
+        }
+
+    # SPORTS GENRE
+    @property
+    def sports(self):
+        return {
+            "name": random.choice([
+                f"Champions of {random.choice(places)}",
+                f"The {fake.color_name()} Team",
+                f"Victory in {fake.city()}",
+                f"The {fake.word()} League",
+                f"Training for {fake.word()}",
+                f"Gold Medal {fake.word()}",
+                "The Underdog Story",
+                f"Game of {fake.word()}s"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Football": 0.20,
+                "Basketball": 0.15,
+                "Baseball": 0.15,
+                "Boxing": 0.20,
+                "Racing": 0.15,
+                "Olympics": 0.15
+            }, k=self.additional_genres)
+        }
+
+    # CRIME GENRE
+    @property
+    def crime(self):
+        return {
+            "name": random.choice([
+                # Detective-style titles
+                f"Detective {fake.last_name()}",
+                f"The {fake.color_name()} Case",
+                f"Mystery at {random.choice(places)}",
+                f"Inspector {fake.last_name()}",
+                # Noir-style titles
+                f"Dark Night in {fake.city()}",
+                f"The {fake.color_name()} Shadow",
+                f"Midnight {fake.word()}",
+                f"Black {fake.word()}",
+                # Gangster-style titles
+                f"The Ballad of {fake.name()}",
+                f"The {fake.last_name()} Family",
+                f"{random.choice(criminal_adjectives)} {random.choice(criminals)}",
+                f"King of {random.choice(places)}",
+                # Heist-style titles
+                f"The {fake.color_name()} Job",
+                f"Ocean's {random.randint(2, 20)}",
+                f"The {random.choice(places)} Heist",
+                f"Stealing {fake.word()}",
+                # Hood-style titles
+                f"Streets of {random.choice(places)}",
+                f"The {random.choice(animals)} Gang",
+                f"Blood and {fake.word()}",
+                # Mystery-style titles
+                f"The {fake.word()} Mystery",
+                f"Who Killed {fake.name()}?",
+                f"The Missing {fake.word()}",
+                # Vigilante-style titles
+                f"The {fake.color_name()} Vigilante",
+                f"Justice in {random.choice(places)}",
+                f"The {random.choice(superhero_names)} Files"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Detective": 0.15,
+                "Film Noir": 0.10,
+                "Gangster": 0.20,
+                "Heist": 0.15,
+                "Hood Film": 0.08,
+                "Mystery": 0.12,
+                "Vigilante": 0.05,
+                "Police Procedural": 0.10,
+                "Organized Crime": 0.05
+            }, k=self.additional_genres)
+        }
+
+    # FANTASY GENRE
+    @property
+    def fantasy(self):
+        return {
+            "name": random.choice([
+                f"The Chronicles of {random.choice(places)}",
+                f"The {fake.color_name()} Kingdom",
+                f"Quest for the {fake.color_name()} {random.choice(things)}",
+                f"The {fake.color_name()} Throne",
+                f"Magic in {random.choice(places)}",
+                f"The {random.choice(animals)} Prophecy",
+                f"Realm of {fake.word()}",
+                f"The {fake.color_name()} Wizard",
+                f"Dragons of {random.choice(places)}",
+                f"The {fake.word()} Saga",
+                f"Legends of {fake.last_name()}",
+                f"The {fake.color_name()} Spell",
+                f"Empire of {fake.word()}",
+                f"The {random.choice(animals)} Wars",
+                f"Curse of the {fake.color_name()} {random.choice(things)}",
+                f"The {fake.word()} Alliance"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "High Fantasy": 0.25,
+                "Urban Fantasy": 0.15,
+                "Dark Fantasy": 0.20,
+                "Contemporary Fantasy": 0.15,
+                "Epic Fantasy": 0.15,
+                "Sword and Sorcery": 0.10
+            }, k=self.additional_genres)
+        }
+        
+    # DOCUMENTARY GENRE
+    @property
+    def documentary(self):
+        return {
+            "name": random.choice([
+                f"Inside {random.choice(places)}",
+                f"The Secret World of {random.choice(animals)}s",
+                f"Uncovering {fake.word()}",
+                f"The Story of {fake.name()}",
+                f"{fake.word()}: A {fake.word()} Story",
+                f"Behind the {fake.color_name()} Curtain",
+                f"The Rise and Fall of {fake.company()}",
+                f"Voices from {random.choice(places)}",
+                f"The {fake.color_name()} Truth",
+                f"Exploring {fake.word()}",
+                f"Lost Secrets of {random.choice(places)}",
+                f"The {fake.word()} Chronicles",
+                f"Breaking: The {fake.word()} Investigation",
+                f"Journey into {fake.word()}",
+                f"The Hidden {fake.word()}"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Historical": 0.18,
+                "Nature": 0.15,
+                "Political": 0.12,
+                "Social Issues": 0.14,
+                "Biography": 0.16,
+                "True Crime": 0.13,
+                "Science": 0.08,
+                "Sports": 0.04
+            }, k=self.additional_genres)
+        }
+
+    # REALITY TV GENRE
+    @property
+    def reality(self):
+        return {
+            "name": random.choice([
+                f"Real Life in {random.choice(places)}",
+                f"The {fake.word()} Challenge",
+                f"Surviving {random.choice(places)}",
+                f"The {fake.color_name()} House",
+                f"Dating in {fake.city()}",
+                f"Big {fake.word()}",
+                f"The Ultimate {fake.word()}",
+                f"Life with the {fake.last_name()}s",
+                f"Keeping Up with {fake.word()}",
+                f"The {fake.word()} Wars",
+                f"Making {fake.word()}",
+                f"The {fake.color_name()} Bachelor",
+                f"Island of {fake.word()}",
+                f"The Real {fake.job()}s",
+                f"Extreme {fake.word()}"
+            ]),
+            "secondary_genres": WeightedChoice({
+                "Competition": 0.25,
+                "Dating": 0.18,
+                "Lifestyle": 0.15,
+                "Survival": 0.12,
+                "Family": 0.10,
+                "Makeover": 0.08,
+                "Travel": 0.07,
+                "Drama": 0.05
+            }, k=self.additional_genres)
+        }
+    
+
+class MovieGenerator(ContentGenerator):
+    """
+    Class for generating movies. Inherits from ContentGenerator.
+    Adds duration parameters (µ & sigma) to each main genre property.
+    """
+    def __init__(self) -> None:
+        super().__init__()
+        
+    @property
+    def action(self):
+        temp = super().action
+        temp["duration_params"] = (110, 20)
+        return temp
+    
+    @property
+    def adventure(self):
+        temp = super().adventure
+        temp["duration_params"] = (115, 18)
+        return temp
+    
+    @property
+    def animation(self):
+        temp = super().animation
+        temp["duration_params"] = (80, 13)
+        return temp
+    
+    @property
+    def comedy(self):
+        temp = super().comedy
+        temp["duration_params"] = (100, 10)
+        return temp
+    
+    @property
+    def drama(self):
+        temp = super().drama
+        temp["duration_params"] = (120, 22)
+        return temp
+    
+    @property
+    def horror(self):
+        temp = super().horror
+        temp["duration_params"] = (90, 24)
+        return temp
+    
+    @property
+    def musical(self):
+        temp = super().musical
+        temp["duration_params"] = (100, 12)
+        return temp
+    
+    @property
+    def romance(self):
+        temp = super().romance
+        temp["duration_params"] = (90, 17)
+        return temp
+    
+    @property
+    def science_fiction(self):
+        temp = super().science_fiction
+        temp["duration_params"] = (140, 16)
+        return temp
+    
+    @property
+    def thriller(self):
+        temp = super().thriller
+        temp["duration_params"] = (95, 13)
+        return temp
+    
+    @property
+    def western(self):
+        temp = super().western
+        temp["duration_params"] = (120, 19)
+        return temp
+    
+    @property
+    def sports(self):
+        temp = super().sports
+        temp["duration_params"] = (90, 20)
+        return temp
+    
+    @property
+    def crime(self):
+        temp = super().crime
+        temp["duration_params"] = (120, 14)
+        return temp
+    
+    @property
+    def fantasy(self):
+        temp = super().fantasy
+        temp["duration_params"] = (110, 23)
+        return temp
+    
+    @property
+    def documentary(self):
+        temp = super().documentary
+        temp["duration_params"] = (90, 9)
+        return temp
+    
+    @property
+    def reality(self):
+        temp = super().reality
+        temp["duration_params"] = (60, 8)
+        return temp
+        
+    def generate_content(self, genres: List[Genre]) -> Movie:
+        """Generates a movie based on a random main genre.
+
+        Args:
+            genres (List[Genre]): List of all possible genres as objects
+
+        Returns:
+            Movie: The generated movie object.
+        """
+        
+        # Dictionary mapping genres (strings) to genre properties
+        genre_map = {
+            "Action": self.action,
+            "Adventure": self.adventure,
+            "Animation": self.animation,
+            "Comedy": self.comedy,
+            "Crime": self.crime,
+            "Drama": self.drama,
+            "Fantasy": self.fantasy,
+            "Horror": self.horror,
+            "Musical": self.musical,
+            "Romance": self.romance,
+            "Science_Fiction": self.science_fiction,
+            "Sci-Fi": self.science_fiction,
+            "Thriller": self.thriller,
+            "Western": self.western,
+            "Sports": self.sports,
+            "Documentary": self.documentary,
+            "Reality": self.reality
+        }
+        
+        genre_type = str(self.genres.choose()[0])   # Generate random genre
+        genre_data = genre_map[genre_type.title()]  # Get genre property
+        title = genre_data["name"]                  # Get title
+        
+        # Get genres as combination of main genre and additional genres
+        genre_names = [genre_type] + genre_data["secondary_genres"].choose()
+        
+        # Get the duration of the movie from the duration parameters
+        duration = int(random.normalvariate(
+            mu=genre_data["duration_params"][0], 
+            sigma=genre_data["duration_params"][1]
+        ))
+        
+        # Mess up with the data
+        if title[:3] == "The" and random.randint(1,1000) == 1:
+            title = title[3:]
+            
+        if random.randint(1,1000) == 1:
+            title = ' ' + title
+            
+        if random.randint(1,1000) == 1:
+            title += ' '
+            
+        if random.randint(1,1000) == 1:
+            duration *= 60
+        
+        # Generate movie object
+        m = Movie(
+            name = title,
+            duration = duration
+        )
+        
+        # Add genres and shuffle them (just for more variability)
+        for g in genres:
+            if g.name in genre_names:
+                m.genres.append(g)
+        random.shuffle(m.genres)
+           
+        return m
+    
+
+class EpisodeGenerator(ContentGenerator):
+    """A class to generate random episodes. Inherits from ContentGenerator."""
+    def __init__(self) -> None:
+        super().__init__()
+        
+    def generate_content(self, main_genre: str, season:int, duration:int) -> Episode:
+        """
+        Generates the episodes, getting the name from the properties, but the rest from parameters.
+
+        Returns:
+            Episode: The generated episode.
+        """
+        
+        # Dictionary mapping genres (strings) to genre properties
+        genre_map = {
+            "Action": self.action,
+            "Adventure": self.adventure,
+            "Animation": self.animation,
+            "Comedy": self.comedy,
+            "Crime": self.crime,
+            "Drama": self.drama,
+            "Fantasy": self.fantasy,
+            "Horror": self.horror,
+            "Musical": self.musical,
+            "Romance": self.romance,
+            "Science_Fiction": self.science_fiction,
+            "Sci-Fi": self.science_fiction,
+            "Thriller": self.thriller,
+            "Western": self.western,
+            "Sports": self.sports,
+            "Documentary": self.documentary,
+            "Reality": self.reality
+        }
+        
+        # Get properties for genre base on the name passed for the main genre
+        genre_data = genre_map[main_genre]
+        ep_title = genre_data["name"]       # Get episode title
+        
+        # Mess with the data
+        if ep_title[:3] == "The" and random.randint(1,1000) == 1:
+            ep_title = ep_title[3:]
+            
+        if random.randint(1,1000) == 1:
+            ep_title = ' ' + ep_title
+            
+        if random.randint(1,1000) == 1:
+            ep_title += ' '
+        
+        if random.randint(1,1000) == 1:
+            duration *= 60
+        
+        # Generate episode
+        ep = Episode(
+            name = ep_title,
+            duration = duration+random.randint(-4, 4),
+            season=season
+        )
+            
+        return ep
+        
+        
+class SeriesGenerator(ContentGenerator):
+    """
+    Class for generating movies. Inherits from ContentGenerator.
+    Adds duration parameters (µ & sigma) and number of episodes to each main genre property.
+    """
+    def __init__(self) -> None:
+        super().__init__()
+        
+    @property
+    def action(self):
+        temp = super().action
+        temp["duration_params"] = (50, 4)
+        temp["num_episodes"] = 20
+        return temp
+    
+    @property
+    def adventure(self):
+        temp = super().adventure
+        temp["duration_params"] = (48, 6)
+        temp["num_episodes"] = 16
+        return temp
+    
+    @property
+    def animation(self):
+        temp = super().animation
+        temp["duration_params"] = (18, 10)
+        temp["num_episodes"] = 30
+        return temp
+    
+    @property
+    def comedy(self):
+        temp = super().comedy
+        temp["duration_params"] = (28, 4)
+        temp["num_episodes"] = 8
+        return temp
+    
+    @property
+    def drama(self):
+        temp = super().drama
+        temp["duration_params"] = (52, 5)
+        temp["num_episodes"] = 24
+        return temp
+    
+    @property
+    def horror(self):
+        temp = super().horror
+        temp["duration_params"] = (40, 7)
+        temp["num_episodes"] = 12
+        return temp
+    
+    @property
+    def musical(self):
+        temp = super().musical
+        temp["duration_params"] = (20, 2)
+        temp["num_episodes"] = 8
+        return temp
+    
+    @property
+    def romance(self):
+        temp = super().romance
+        temp["duration_params"] = (31, 6)
+        temp["num_episodes"] = 30
+        return temp
+    
+    @property
+    def science_fiction(self):
+        temp = super().science_fiction
+        temp["duration_params"] = (56, 7)
+        temp["num_episodes"] = 16
+        return temp
+    
+    @property
+    def thriller(self):
+        temp = super().thriller
+        temp["duration_params"] = (44, 5)
+        temp["num_episodes"] = 20
+        return temp
+    
+    @property
+    def western(self):
+        temp = super().western
+        temp["duration_params"] = (33, 10)
+        temp["num_episodes"] = 10
+        return temp
+    
+    @property
+    def sports(self):
+        temp = super().sports
+        temp["duration_params"] = (45, 3)
+        temp["num_episodes"] = 12
+        return temp
+    
+    @property
+    def crime(self):
+        temp = super().crime
+        temp["duration_params"] = (40, 6)
+        temp["num_episodes"] = 20
+        return temp
+    
+    @property
+    def fantasy(self):
+        temp = super().fantasy
+        temp["duration_params"] = (48, 4)
+        temp["num_episodes"] = 16
+        return temp
+    
+    @property
+    def documentary(self):
+        temp = super().documentary
+        temp["duration_params"] = (65, 5)
+        temp["num_episodes"] = 20
+        return temp
+    
+    @property
+    def reality(self):
+        temp = super().reality
+        temp["duration_params"] = (47, 4)
+        temp["num_episodes"] = 20
+        return temp
+    
+    def generate_content(self, genres: List[Genre]):
+        """Generates a series WITH episodes.
+
+        Args:
+            genres (List[Genre]): List of all posible genres
+
+        Returns:
+            _type_: _description_
+        """
+        
+        # Dictionary mapping genres (strings) to genre properties
+        genre_map = {
+            "Action": self.action,
+            "Adventure": self.adventure,
+            "Animation": self.animation,
+            "Comedy": self.comedy,
+            "Crime": self.crime,
+            "Drama": self.drama,
+            "Fantasy": self.fantasy,
+            "Horror": self.horror,
+            "Musical": self.musical,
+            "Romance": self.romance,
+            "Science_Fiction": self.science_fiction,
+            "Sci-Fi": self.science_fiction,
+            "Thriller": self.thriller,
+            "Western": self.western,
+            "Sports": self.sports,
+            "Documentary": self.documentary,
+            "Reality": self.reality
+        }
+        
+        genre_type = str(self.genres.choose()[0])   # Generate random genre based on weights
+        genre_data = genre_map[genre_type.title()]  # Get genre properties
+        title = genre_data["name"]                  # Get title from properties
+        
+        # Get genres
+        genre_names = [genre_type] + genre_data["secondary_genres"].choose()
+        
+        # Calculate durations for episodes based on duration parameters and normal distribution
+        duration = int(random.normalvariate(
+            mu=genre_data["duration_params"][0], 
+            sigma=genre_data["duration_params"][1]
+        ))
+        
+        # Mess a bit with the data
+        if title[:3] == "The" and random.randint(1,1000) == 1:
+            title = title[3:]
+            
+        if random.randint(1,1000) == 1:
+            title = ' ' + title
+            
+        if random.randint(1,1000) == 1:
+            title += ' '
+        
+        # Genrate series
+        s = Series(name=title)
+        
+        # Genetate episodes and append them to the series
+        num_episodes = genre_data["num_episodes"]
+        for ep_number in range(num_episodes):
+            ep_generator = EpisodeGenerator()
+            ep = ep_generator.generate_content(
+                main_genre=genre_type.title(), 
+                season=max(1, ep_number//random.randint(1,4)), 
+                duration=duration
+            )
+            s.episodes.append(ep)
+        
+        # Add each genre to the series
+        for g in genres:
+            if g.name in genre_names:
+                s.genres.append(g)
+                for ep in s.episodes:
+                    ep.genres.append(g)
+        
+        # Shuffle genres for complexity
+        random.shuffle(s.genres)
+        
+        return s
+        
 
 def generate_genres() -> List[Genre]:
-    """Generate the genres of the catalog."""
-    # Got names from Wikipedia, swapped one (guess which)
-    genre_names = [
-        "Action",
-        "Adventure",
-        "Animation",
-        "Comedy",
-        "Drama",
-        "Fantasy",
-        "Historical",
-        "Horror",
-        "Melodrama",
-        "Musical",
-        "Noir",
-        "Romance",
-        "Science Fiction",
-        "Spies",
-        "Thriller",
-        "Western"
-    ]
+    """Generate the all the genres of the catalog."""
+    genre_names = {
+            "Action", "Martial Arts", "Spy", "Military", "Superhero", "Disaster",
+                "Chase", "Revenge", "Monster",
+            "Adventure", "Jungle", "Desert", "Ocean", "Mountain", "Snow", 
+                "Treasure Hunt", "Pirate", "Survival",
+            "Animation", "Traditional 2D", "CGI", "3D", "Stop Motion",
+                "Mixed Media", "Puppetry", "Rotoscoping",
+            "Comedy", "Romanctic Comedy", "Slapstick", "Dark Comedy", "Screwball",
+                "Parody", "Satire",
+            "Crime", "Detective", "Film Noir", "Gangster", "Heist", "Hood Film",
+                "Mystery", "Vigilante", "Police Procedural", "Organized Crime",
+            "Drama", "Family Drama", "Psychological Drama", "Social Drama",
+                "Political Drama", "Criminal Drama", "Legal Drama", "Medical Drama",
+            "Fantasy", "High Fantasy", "Urban Fantasy", "Dark Fantasy",
+                "Contemporary Fantasy", "Epic Fantasy", "Sword and Sorcery",
+            "Horror", "Slasher", "Supernatural", "Psychological Horror", "Zombie",
+                "Vampire", "Werewolf", "Ghost",
+            "Musical", "Broadway", "Jukebox Musical", "Rock Opera", "Dance Musical",
+                "Biographical Musical",
+            "Romance",  "Romantic Comedy", "Historical Romance", 
+                "Contemporary Romance", "Paranormal Romance", "Erotic Romance",
+            "Science_Fiction", "Space Opera", "Science Fantasy", "Cyberpunk",
+                "Dystopian", "Time Travel", "Alien Contact", "Post-Apocalyptic",
+            "Sci-Fi",
+            "Thriller", "Psychological Thriller", "Political Thriller",
+                "Techno Thriller", "Medical Thriller", "Legal Thriller",
+                "Conspiracy Thriller",
+            "Western", "Spaghetti Western", "Revisionist Western", "Comedy Western",
+                "Acid Western", "Space Western", "Contemporary Western",
+            "Sports", "Foorball", "Basketball", "Baseball", "Boxing", "Racing",
+                "Olympics",
+            "Documentary", "Historical", "Nature", "Political", "Social Issues",
+                "Biography", "True Crime", "Science", "Sports",
+            "Reality", "Competition", "Dating", "Lifestyle", "Family",
+                "Makeover", "Travel"
+    }
     genre_objs = []
     
-    # Create each object
-    for name in genre_names:
+    # Create each genre object
+    for name in list(genre_names):
         genre_objs.append(Genre(name=name))
         
     return genre_objs
 
 
-def generate_movies(num: int = 5000) -> List[Movie]:
-    """Generates num fake movies of the catalog."""
+def generate_movies(genres: List[Genre] ,num: int = 5000) -> List[Movie]:
+    """Generates `num` fake movies of the catalog."""
+    # List to store movies
     movies = []
-    names =[]
     
+    # Create object to generate movies
+    movie_generator = MovieGenerator()
     for _ in range(num):
-        n = generate_fake_title()   # get name
-        names.append(n) # add it the names list
-            # add the movie object to the list
-        movies.append(Movie(
-            name=n, 
-            duration=random.randint(100, 240)
-        ))
-            # store the names of the movies in a file for finds during testing. Not needed for Docker.
-        #with open('names/movie_names.txt', 'w') as f:
-        #    for n in names:
-        #        f.write(n + '\n')
-    return movies   # return the list of objects
+        m = movie_generator.generate_content(genres)
+        movies.append(m)
+    return movies   # return the list of movies
 
 
-def generate_series(num: int = 2000):
-    """Generates num fake series for the catalog."""
+def generate_series(genres: List[Genre], num: int = 2000):
+    """Generates `num` fake series (with episodes) for the catalog. Episodes included"""
     series = []
-    series_names: dict[str, List[str]] = {} # dictionary to save series and episodes names
-    
+   
+    # Instantiate object to generate series
+    series_generator = SeriesGenerator()
     for _ in range(num):
-        name = generate_fake_title()
-        series.append(Series(name=name))
-        series_names[name] = [] # add name to the dict
-    return series, series_names # return list and dict
-        
-        
-def generate_episodes(series: List[Series], series_names: dict[str, List[str]], num: int = 20000) -> None:
-    """Generate num fake episodes for the catalog."""
-    for _ in range(num):
-        ep_name = generate_fake_title()
-        s = random.choice(series)   # pick a random series
-            # append an episode to it
-        s.episodes.append(Episode(
-            name=ep_name,
-            duration=random.randint(5, 100),
-            season=random.randint(1, 10)
-        ))
-        series_names[s.name].append(ep_name)    # Add the episode to the list of its respective entry
-    
-    # Once the series-episodes dictinary is comlete, store it on a json file for testing purposes. Not needed for Docker.
-    #with open("names/series.json", "w") as f:
-    #    json.dump(series_names, f)
-        
-        
-def embed_genres(
-    genres: List[Genre], 
-    movies: List[Movie], 
-    series: List[Series]
-) -> None:
-    """Add genres to the contents of the catalog."""
-    for m in movies:
-            # Use set to add the same genre twice to the same movie
-        gnr_set = {random.choice(genres) for _ in range(random.randint(1, 5))}
-        for gnr in list(gnr_set):
-            m.genres.append(gnr)
-        
-    for s in series:
-            # Use set to add the same genre twice to the same series and eps
-        gnr_set = {random.choice(genres) for _ in range(random.randint(1, 5))}
-        for gnr in list(gnr_set):
-            s.genres.append(gnr)
-            # Add the genres to each episode
-            for ep in s.episodes:
-                ep.genres.append(gnr)
-                
+        s = series_generator.generate_content(genres) # Generate a series
+        series.append(s)
+    return series # return list of series
+
                 
 if __name__ == '__main__':
+    # Generate genres, movies and series
     genres = generate_genres()
-    movies = generate_movies(num=100000)
-    series, series_names = generate_series(num=50000)
-    generate_episodes(series, series_names, num=850000)
-    embed_genres(genres, movies, series)
+    movies = generate_movies(genres)
+    series = generate_series(genres)
     
     # Commit the objects to the database
     with orm.Session(ENGINE) as session:
