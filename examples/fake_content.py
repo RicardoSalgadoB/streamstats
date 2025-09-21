@@ -22,6 +22,21 @@ ENGINE = sa.create_engine(db_url)
 # Instantiate Faker Object generator
 fake = Faker()
 
+# Dictionary for content translation
+TRANSLATIONS = {
+    "Adrenaline Rush": ["A tope", "Sobredosis de Adrenalina"],
+    "Into the Unknown": ["Hacia lo desconocido"],
+    "Comedy Gold": ["Mucha Risa"],
+    "Emotional Journey": ["Viaje Emocional", "Dimensión Emocional"],
+    "Blood Moon Rising": [
+        "El surgimiento de los muertos", 
+        "El Acenso de la luna roja",
+        "El Ascenso del Mal",
+    ],
+    "The Final Hour": ["La Hora Final", "La Última Hora"],
+    "The Underdog Story": ["La Historia del Perro de Abajo"]
+}
+
 
 # Generate list of random stuff to add complexity
 places = [
@@ -663,14 +678,14 @@ class MovieGenerator(ContentGenerator):
         temp["duration_params"] = (60, 8)
         return temp
         
-    def generate_content(self, genres: List[Genre]) -> Movie:
+    def generate_content(self, genres: List[Genre]) -> List[Movie]:
         """Generates a movie based on a random main genre.
 
         Args:
             genres (List[Genre]): List of all possible genres as objects
 
         Returns:
-            Movie: The generated movie object.
+            Movie: The generated movie objects in different laguages.
         """
         
         # Dictionary mapping genres (strings) to genre properties
@@ -707,32 +722,42 @@ class MovieGenerator(ContentGenerator):
             sigma=genre_data["duration_params"][1]
         ))
         
+        # Translate to other languages
+        titles = [title]
+        if title in TRANSLATIONS:
+            titles += TRANSLATIONS[title]
+            
         # Mess up with the data
-        if title[:3] == "The" and random.randint(1,1000) == 1:
-            title = title[3:]
-            
-        if random.randint(1,1000) == 1:
-            title = ' ' + title
-            
-        if random.randint(1,1000) == 1:
-            title += ' '
+        for t in titles:
+            if t[:3] == "The" and random.randint(1,1000) == 1:
+                t = t[3:]
+
+            if random.randint(1,1000) == 1:
+                t = ' ' + t
+
+            if random.randint(1,1000) == 1:
+                t += ' '
             
         if random.randint(1,1000) == 1:
             duration *= 60
         
         # Generate movie object
-        m = Movie(
-            name = title,
-            duration = duration
-        )
+        movies = []
+        for t in titles:
+            m = Movie(
+                name = t,
+                duration = duration
+            )
+            movies.append(m)
         
         # Add genres and shuffle them (just for more variability)
-        for g in genres:
-            if g.name in genre_names:
-                m.genres.append(g)
-        random.shuffle(m.genres)
+        for m in movies:
+            for g in genres:
+                if g.name in genre_names:
+                    m.genres.append(g)
+            random.shuffle(m.genres)
            
-        return m
+        return movies
     
 
 class EpisodeGenerator(ContentGenerator):
@@ -740,12 +765,12 @@ class EpisodeGenerator(ContentGenerator):
     def __init__(self) -> None:
         super().__init__()
         
-    def generate_content(self, main_genre: str, season:int, duration:int) -> Episode:
+    def generate_content(self, main_genre: str, season:int, duration:int) -> List[Episode]:
         """
         Generates the episodes, getting the name from the properties, but the rest from parameters.
 
         Returns:
-            Episode: The generated episode.
+            List[Episode]: The generated episodes in english and spanish.
         """
         
         # Dictionary mapping genres (strings) to genre properties
@@ -773,27 +798,36 @@ class EpisodeGenerator(ContentGenerator):
         genre_data = genre_map[main_genre]
         ep_title = genre_data["name"]       # Get episode title
         
-        # Mess with the data
-        if ep_title[:3] == "The" and random.randint(1,1000) == 1:
-            ep_title = ep_title[3:]
-            
-        if random.randint(1,1000) == 1:
-            ep_title = ' ' + ep_title
-            
-        if random.randint(1,1000) == 1:
-            ep_title += ' '
+        # Translate to other languages
+        titles = [ep_title]
+        if ep_title in TRANSLATIONS:
+            titles += TRANSLATIONS[ep_title]
         
+        # Mess up with the data
+        for t in titles:
+            if t[:3] == "The" and random.randint(1,1000) == 1:
+                t = t[3:]
+
+            if random.randint(1,1000) == 1:
+                t = ' ' + t
+
+            if random.randint(1,1000) == 1:
+                t += ' '
+            
         if random.randint(1,1000) == 1:
             duration *= 60
         
-        # Generate episode
-        ep = Episode(
-            name = ep_title,
-            duration = duration+random.randint(-4, 4),
-            season=season
-        )
+        # Generate episodes in ditinct languages
+        eps = []
+        for t in titles:
+            ep = Episode(
+                name = ep_title,
+                duration = duration+random.randint(-4, 4),
+                season=season
+            )
+            eps.append(ep)
             
-        return ep
+        return eps
         
         
 class SeriesGenerator(ContentGenerator):
@@ -916,14 +950,14 @@ class SeriesGenerator(ContentGenerator):
         temp["num_episodes"] = 20
         return temp
     
-    def generate_content(self, genres: List[Genre]):
+    def generate_content(self, genres: List[Genre]) -> List[Series]:
         """Generates a series WITH episodes.
 
         Args:
             genres (List[Genre]): List of all posible genres
 
         Returns:
-            _type_: _description_
+            List[Series]: Generated Series in different languages
         """
         
         # Dictionary mapping genres (strings) to genre properties
@@ -960,41 +994,53 @@ class SeriesGenerator(ContentGenerator):
             sigma=genre_data["duration_params"][1]
         ))
         
-        # Mess a bit with the data
-        if title[:3] == "The" and random.randint(1,1000) == 1:
-            title = title[3:]
-            
-        if random.randint(1,1000) == 1:
-            title = ' ' + title
-            
-        if random.randint(1,1000) == 1:
-            title += ' '
+        # Translate to other languages
+        titles = [title]
+        if title in TRANSLATIONS:
+            titles += TRANSLATIONS[title]
+        
+        # Mess up with the data
+        for t in titles:
+            if t[:3] == "The" and random.randint(1,1000) == 1:
+                t = t[3:]
+
+            if random.randint(1,1000) == 1:
+                t = ' ' + t
+
+            if random.randint(1,1000) == 1:
+                t += ' '
         
         # Genrate series
-        s = Series(name=title)
+        series: List[Series] = []
+        for t in titles:
+            s = Series(name=t)
+            series.append(s)
         
         # Genetate episodes and append them to the series
         num_episodes = genre_data["num_episodes"]
         for ep_number in range(num_episodes):
             ep_generator = EpisodeGenerator()
-            ep = ep_generator.generate_content(
+            eps = ep_generator.generate_content(
                 main_genre=genre_type.title(), 
                 season=max(1, ep_number//random.randint(1,4)), 
                 duration=duration
             )
-            s.episodes.append(ep)
+            for ep in eps:
+                for s in series:
+                    s.episodes.append(ep)
         
         # Add each genre to the series
         for g in genres:
             if g.name in genre_names:
-                s.genres.append(g)
-                for ep in s.episodes:
-                    ep.genres.append(g)
+                for s in series:
+                    s.genres.append(g)
+                    for ep in s.episodes:
+                        ep.genres.append(g)
+                    # Shuffle genres for complexity
+                        random.shuffle(ep.genres)
+                    random.shuffle(s.genres)
         
-        # Shuffle genres for complexity
-        random.shuffle(s.genres)
-        
-        return s
+        return series
         
 
 def generate_genres() -> List[Genre]:
@@ -1052,8 +1098,9 @@ def generate_movies(genres: List[Genre] ,num: int = 5000) -> List[Movie]:
     # Create object to generate movies
     movie_generator = MovieGenerator()
     for _ in range(num):
-        m = movie_generator.generate_content(genres)
-        movies.append(m)
+        translations = movie_generator.generate_content(genres)
+        for m in translations:
+            movies.append(m)
     return movies   # return the list of movies
 
 
@@ -1064,8 +1111,9 @@ def generate_series(genres: List[Genre], num: int = 2000):
     # Instantiate object to generate series
     series_generator = SeriesGenerator()
     for _ in range(num):
-        s = series_generator.generate_content(genres) # Generate a series
-        series.append(s)
+        translations = series_generator.generate_content(genres) # Generate a series
+        for s in translations:
+            series.append(s)
     return series # return list of series
 
                 
