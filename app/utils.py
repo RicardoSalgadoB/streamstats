@@ -618,6 +618,75 @@ def find_genre(
 
 
 # RATING METHODS # 
+
+def rate_content(
+    raw: RawRating, 
+    name: Optional[str] = Query(None, description="Movie name"), 
+    ID: Optional[int] = Query(None, description="Movie ID")
+) -> dict:
+    """Funciton to add a user rating to some content.
+
+    Args:
+        raw (RawRating): The json payload from the function parsed as Pydantic Base Model.
+        name (str): Name of the content. Query parameter.
+        ID (int): ID of the content. Query parameter.
+
+    Returns:
+        dict: Message indicating success.
+    """
+    # Process rating before the rest
+    score = raw.score
+    review = raw.review if raw.review else None
+    if score > 5 or score < 1:
+        raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
+    rating = Rating(score=score, review=review)
+    
+    # If movie specified by name
+    if name:
+        stmt = sa.select(Content).where(Content.name==name).order_by(Content.id).limit(1)
+            # If there are movies that share a name
+
+        with orm.Session(ENGINE) as session:
+            content = session.scalar(stmt)
+            if content:
+                content.ratings.append(rating)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"Content '{name}' not found.")
+
+        if review:
+            return {
+                "message": f"The content '{name}' has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The content '{name}' has been given a rating of {score}"
+            }
+    
+    # If movie specified by ID
+    elif ID:
+        stmt = sa.select(Content).where(Content.id==ID)
+        with orm.Session(ENGINE) as session:
+            content = session.scalar(stmt)
+            if content:
+                content.ratings.append(rating)
+                session.commit()
+            else:
+                raise HTTPException(status_code=404, detail=f"ID {ID} not found.")
+        
+        if review:
+            return {
+                "message": f"The content of ID {ID} has been given a rating of {score} with a review"
+            }
+        else:
+            return {
+                "message": f"The contents of {ID} has been given a rating of {score}"
+            }
+    
+    # Tell the client to specify by ID or by name
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
+
         
 def rate_movie(
     raw: RawRating, 

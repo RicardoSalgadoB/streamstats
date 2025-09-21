@@ -22,6 +22,7 @@ from app.utils import (
     find_genre,
     
     # Rate
+    rate_content,
     rate_movie,
     rate_series,
     rate_episode,
@@ -70,6 +71,7 @@ app.get("/genres/series", name="show_series_by_genre")(show_series_by_genre)
 app.get("/genres/content", name="show_content_by_genre")(show_content_by_genre)
     
 # Rating methods
+app.post("/content/rate", name="rate a movie")(rate_content)
 app.post("/movies/rate", name="rate a movie")(rate_movie)
 app.post("/series/rate", name="rate a series")(rate_series)
 app.post("/series/episodes/rate", name="rate an episode")(rate_episode)
