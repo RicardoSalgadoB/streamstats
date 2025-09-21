@@ -1097,7 +1097,9 @@ def generate_movies(genres: List[Genre] ,num: int = 5000) -> List[Movie]:
     
     # Create object to generate movies
     movie_generator = MovieGenerator()
-    for _ in range(num):
+    for i in range(num):
+        if i%(num//10) == 0:
+            print(f'{i}/{num} movies generated')
         translations = movie_generator.generate_content(genres)
         for m in translations:
             movies.append(m)
@@ -1110,7 +1112,9 @@ def generate_series(genres: List[Genre], num: int = 2000):
    
     # Instantiate object to generate series
     series_generator = SeriesGenerator()
-    for _ in range(num):
+    for i in range(num):
+        if i%(num//10) == 0:
+            print(f'{i}/{num} series generated')
         translations = series_generator.generate_content(genres) # Generate a series
         for s in translations:
             series.append(s)
@@ -1119,11 +1123,15 @@ def generate_series(genres: List[Genre], num: int = 2000):
                 
 if __name__ == '__main__':
     # Generate genres, movies and series
+    print("Generating genres...")
     genres = generate_genres()
+    print("Generating movies...")
     movies = generate_movies(genres)
+    print("Generating series...")
     series = generate_series(genres)
     
     # Commit the objects to the database
+    print("Adding content to the database...")
     with orm.Session(ENGINE) as session:
         for g in genres:
             session.add(g)
@@ -1132,3 +1140,5 @@ if __name__ == '__main__':
         for s in series:
             session.add(s)
         session.commit()
+        
+    print("Generation is done")
