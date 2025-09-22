@@ -912,7 +912,7 @@ def rate_episode(
         
         if review:
             return {
-                "message": f"The episode wiht ID {ID} has been given a rating of {score} with a review"
+                "message": f"The episode with ID {ID} has been given a rating of {score} with a review"
             }
         else:
             return {
@@ -947,11 +947,18 @@ def add_movie(raw: RawMovie) -> dict:
             message = f"Genres '{genres}' not found. Adding movie '{raw.name}' anyway"
         session.add(m)
         session.commit()
+        ID = m.id
         
     if not message:
-        return {"message": f"The movie '{raw.name}' has been added"}
+        return {
+            "message": f"The movie '{raw.name}' has been added",
+            "id": ID
+        }
     else:
-        return {"message": message}
+        return {
+            "message": message,
+            "id": ID
+        }
     
     
 def add_series(raw: RawSeries) -> dict:
@@ -975,14 +982,25 @@ def add_series(raw: RawSeries) -> dict:
             message = f"Genres '{genres}' not found. Adding series '{raw.name}' anyway"
         session.add(s)
         session.commit()
+        ID = s.id
         
     if not message:
-        return {"message": f"The series '{raw.name}' has been added"}
+        return {
+            "message": f"The series '{raw.name}' has been added",
+            "id": ID
+        }
     else:
-        return {"message": message}
+        return {
+            "message": message,
+            "id": ID
+        }
     
     
-def add_episode(raw: RawEpisode, series_name: str) -> dict:
+def add_episode(
+    raw: RawEpisode, 
+    series_name: Optional[str] = None,
+    series_ID: Optional[int] = None
+) -> dict:
     """Add an episode to a series.
 
     Args:
@@ -993,13 +1011,19 @@ def add_episode(raw: RawEpisode, series_name: str) -> dict:
         dict: A message indicating success.
     """
     ep = Episode(name=raw.name, duration=raw.duration, season=raw.season)
-    series_stmt = (
-        sa.select(Series)
-        .where(Series.name == series_name)
-        .order_by(Series.id)
-        .limit(1)
-    )
-    # Only select the series with the smallest id if many series with the same name.
+    
+    if series_name:
+        series_stmt = (
+            sa.select(Series)
+            .where(Series.name == series_name)
+            .order_by(Series.id)
+            .limit(1)
+        )
+        # Only select the series with the smallest id if many series with the same name.
+    elif series_ID:
+        series_stmt = sa.select(Series).where(Series.id == series_ID)
+    else:
+        raise HTTPException(status_code=400, detail="Name or ID must be specified in query parameters")
     
     with orm.Session(ENGINE) as session:
         s = session.scalar(series_stmt)
@@ -1007,12 +1031,20 @@ def add_episode(raw: RawEpisode, series_name: str) -> dict:
             s.episodes.append(ep)
             ep.genres = s.genres
             session.commit()
+            ID = ep.id
         else:
             raise HTTPException(status_code=404, detail=f"The series '{series_name}' wasn't found")
-        
-    return {
-        "message": f"The episode '{raw.name}' has been added to '{series_name}'"
-    }
+    
+    if series_name:
+        return {
+            "message": f"The episode '{raw.name}' has been added to '{series_name}'",
+            "id": ID
+        }
+    elif series_ID:
+        return {
+            "message": f"The episode '{raw.name}' has been added to series with ID {series_ID}",
+            "id": ID
+        }
     
 
 def add_genre(raw: RawGenre) -> dict:
@@ -1032,10 +1064,14 @@ def add_genre(raw: RawGenre) -> dict:
             g = Genre(name=raw.name)
             session.add(g)
             session.commit()
+            ID = g.id
         else:   # If it already exists tell the user
             HTTPException(status_code=400, detail=f"The genre '{raw.name}' already exists")
         
-    return {"message": f"The genre '{raw.name}' has been added"}
+    return {
+        "message": f"The genre '{raw.name}' has been added",
+        "id": ID
+    }
  
 
 # REMOVING METHODS #   
