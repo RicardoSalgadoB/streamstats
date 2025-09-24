@@ -77,10 +77,10 @@ def generate_movies(genres: List[Genre] ,num: int = 5000) -> List[Movie]:
     movies = []
     
     # Create object to generate movies
-    movie_generator = MovieGenerator()
     for i in range(num):
         if i%(num//10) == 0:
             print(f'{i}/{num} movies generated')
+        movie_generator = MovieGenerator()
         translations = movie_generator.generate_content(genres)
         for m in translations:
             movies.append(m)
@@ -92,10 +92,10 @@ def generate_series(genres: List[Genre], num: int = 2000):
     series = []
    
     # Instantiate object to generate series
-    series_generator = SeriesGenerator()
     for i in range(num):
         if i%(num//10) == 0:
             print(f'{i}/{num} series generated')
+        series_generator = SeriesGenerator()
         translations = series_generator.generate_content(genres) # Generate a series
         for s in translations:
             series.append(s)

@@ -128,7 +128,7 @@ def show_all(page: int = 1, size: int = 20) -> List[dict]:
     with orm.Session(ENGINE) as session:
         contents = session.scalars(stmt).all()
         if contents:
-            return [c.to_dict() for c in contents]
+            return [c.to_dict() | {'type': c.type} for c in contents]
         else:
             raise HTTPException(status_code=404, detail="No movies or series in the database. Add one.")
     
@@ -297,7 +297,7 @@ def show_content_by_genre(
         with orm.Session(ENGINE) as session:
             contents = session.scalars(stmt).all()
             if contents:
-                return [c.to_dict() for c in contents]
+                return [c.to_dict() | {'type': c.type} for c in contents]
             else:
                 raise HTTPException(status_code=404, detail=f"Nothing in genre '{name}'. Add something.")
             
@@ -408,7 +408,7 @@ def find_content(
         with orm.Session(ENGINE) as session:
             content = session.scalar(stmt)
             if content:
-                return content.to_dict()
+                return content.to_dict() | {'type': content.type}
             else:
                 raise HTTPException(status_code=404, detail=f"ID: {ID} not found")
             
@@ -464,7 +464,7 @@ def find_series(
     name: Optional[str] = Query(None, description="Series name"), 
     ID: Optional[int] = Query(None, description="Series ID")
 ) -> Union[dict, List[dict]]:
-    """Finds a specific series (if multiple with same name, retruns all.)
+    """Finds a specific series (if multiple with same name, returns all.)
 
     Args:
         name (str): Name of the series to be found. Passed as query parameter.
@@ -1040,7 +1040,7 @@ def add_episode(
             "message": f"The episode '{raw.name}' has been added to '{series_name}'",
             "id": ID
         }
-    elif series_ID:
+    else:   # elif seriesId, as the true else already cought above
         return {
             "message": f"The episode '{raw.name}' has been added to series with ID {series_ID}",
             "id": ID

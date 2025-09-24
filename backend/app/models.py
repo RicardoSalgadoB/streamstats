@@ -128,7 +128,7 @@ class Content(Base):
         genres_str = ", ".join(genres)
         return (
             f"{self.__class__.__name__}(id={self.id}, title={self.name!r}, " 
-            + f"duration='{self.duration!s} minutes', genre(s)={genres_str!r}, "    
+            + f"duration='{self.duration!s} minutes', genres={genres_str!r}, "    
                 # duration isn't an attribute of content but of its children
             + f"average_rating={self.average!r}, "
             + f"reviews={reviews})"
@@ -140,7 +140,7 @@ class Content(Base):
             "id": self.id,
             "title": self.name,
             "duration_minutes": self.duration,  # same as above
-            "genre(s)": [str(genre.name) for genre in self.genres],
+            "genres": [str(genre.name) for genre in self.genres],
             "average_rating": self.average,
             "reviews": reviews,
         }
@@ -231,7 +231,7 @@ class Series(Content):
     
     # Mapper to allow for inheritance
     __mapper_args__ = {
-        "polymorphic_identity": "serie"
+        "polymorphic_identity": "series"
     }
     
     @property

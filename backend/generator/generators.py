@@ -623,7 +623,7 @@ class MovieGenerator(ContentGenerator):
     @property
     def horror(self):
         temp = super().horror
-        temp["duration_params"] = (90, 24)
+        temp["duration_params"] = (90, 18)
         return temp
     
     @property
@@ -659,7 +659,7 @@ class MovieGenerator(ContentGenerator):
     @property
     def sports(self):
         temp = super().sports
-        temp["duration_params"] = (90, 20)
+        temp["duration_params"] = (90, 15)
         return temp
     
     @property
@@ -671,7 +671,7 @@ class MovieGenerator(ContentGenerator):
     @property
     def fantasy(self):
         temp = super().fantasy
-        temp["duration_params"] = (110, 23)
+        temp["duration_params"] = (110, 21)
         return temp
     
     @property
@@ -707,6 +707,7 @@ class MovieGenerator(ContentGenerator):
             mu=genre_data["duration_params"][0], 
             sigma=genre_data["duration_params"][1]
         ))
+        duration = max(0, duration) # Make sure duration is not negative
         
         # Translate to other languages
         titles = [title]
@@ -820,7 +821,7 @@ class SeriesGenerator(ContentGenerator):
     @property
     def animation(self):
         temp = super().animation
-        temp["duration_params"] = (18, 10)
+        temp["duration_params"] = (28, 5)
         temp["num_episodes"] = 30
         return temp
     
@@ -876,7 +877,7 @@ class SeriesGenerator(ContentGenerator):
     @property
     def western(self):
         temp = super().western
-        temp["duration_params"] = (33, 10)
+        temp["duration_params"] = (43, 8)
         temp["num_episodes"] = 10
         return temp
     
@@ -936,6 +937,7 @@ class SeriesGenerator(ContentGenerator):
             mu=genre_data["duration_params"][0], 
             sigma=genre_data["duration_params"][1]
         ))
+        duration = max(0, duration) # Make sure duration is not negative
         
         # Translate to other languages
         titles = [title]
