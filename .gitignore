@@ -1,8 +1,8 @@
 .env
 .pytest_cache
 .vscode
-*/.venv
-
+**/.venv
+**/venv
 **/__pycache__
 
 names

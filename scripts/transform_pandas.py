@@ -1,6 +1,6 @@
 import pandas as pd
-import numpy as np
 from typing import List
+from time import time
 
 from extract import main_extract
 
@@ -56,20 +56,50 @@ GENRE_TRANSFORMATIONS = {
 }
 
 
-def theManagement(df: pd.DataFrame):
-    titles = df["title"].to_list()
-    for title in titles:
-        title_with_the = "The " + title
-        title_with_the_exists = (df["title"] == title)
-        if title_with_the_exists.any():
-            df.loc[df["title"] == title, "title"] = title_with_the
+def theManagement(df: pd.DataFrame) -> pd.DataFrame:
+    titles = set(df["title"])
+    df["title"] = df["title"].map(
+        lambda t: "The " + t if "The " + t in titles else t
+    )
+    return df
+
+
+def mergeTranslations(df: pd.DataFrame) -> pd.DataFrame:
+    for spanish, english in TRANSLATIONS.items():
+        # Map entries to each english tranlation (could be many movies with the same english name)
+        df["english_title_group"] = (df["title"] == english).cumsum()
+        
+        # Get the reviews & rating corresponding to each translation
+        reviews_by_group = (
+            df.loc[df["title"] == spanish, ["english_title_group", "reviews"]]
+            .groupby("english_title_group")["reviews"]
+            .agg(lambda x: sum(x, []))
+        )
+        ratings_by_group = (
+            df.loc[((df["title"] == spanish) | (df["title"] == english)), ["english_title_group", "average_rating"]]
+            .groupby("english_title_group")["average_rating"]
+            .mean()
+        )
+        
+        # Update reviews & ratings
+        df.loc[df["title"] == english, "reviews"] += (
+            df.loc[df["title"] == english, "english_title_group"].map(reviews_by_group)
+        )
+        df.loc[df["title"] == english, "average_rating"] = (
+            df.loc[df["title"] == english, "english_title_group"].map(ratings_by_group)
+        )
+    
+    df.drop(columns=["english_title_group"], inplace=True)  # drop groups columns
+    df.drop((df[df["title"].isin(TRANSLATIONS.keys())]).index, inplace=True)  # drop spanish titles
+    
+    return df
             
             
 def modifySeriesDuration(df_series: pd.DataFrame, df_episodes: pd.DataFrame):
-    series_id_duration = df_episodes.groupby(["series_id"]).agg({"duration_minutes": "sum"})
+    series_id_duration = df_episodes.groupby("series_id").agg({"duration_minutes": "sum"})
     df_series = pd.merge(df_series, series_id_duration, left_index=True, right_index=True)
-    df_series.drop(["duration_minutes_x"], inplace=True)
-    df_series.rename({"duration_minutes_x":"duration_minutes"}, inplace=True)
+    df_series.drop(columns=["duration_minutes_x"], inplace=True)
+    df_series.rename({"duration_minutes_y":"duration_minutes"}, inplace=True)
     return df_series
     
 
@@ -84,33 +114,32 @@ def cleanData(
     df_episodes["title"] = df_episodes["title"].apply(lambda s: s.strip(' '))
     
     # 2) Deal with the "The"
-    theManagement(df_movies)    # function could also be "theDealer"
-    theManagement(df_series)
-    theManagement(df_episodes)
+    df_movies = theManagement(df_movies)    # function could also be "theDealer"
+    df_series = theManagement(df_series)
+    df_episodes = theManagement(df_episodes)
     
-    # 3) Translate back titles from Spanish to English
-    for spanish, english in TRANSLATIONS:
-        df_movies.loc[df_movies["title"] == spanish, "title"] = english
-        df_series.loc[df_series["title"] == spanish, "title"] = english
-        df_episodes.loc[df_episodes["title"] == spanish, "title"] = english
-        
+    # 3) Merge titles in Spanish & English
+    df_movies = mergeTranslations(df_movies)
+    df_series = mergeTranslations(df_series)
+    df_episodes = mergeTranslations(df_episodes)
+    
     # 4) Standarize length in minutes
         # movies
     movie_threshold = 245
     df_movies.loc[
         df_movies["duration_minutes"] > movie_threshold,
         "duration_minutes"
-    ] = df_movies["duration_minutes"]/60
+    ] = df_movies["duration_minutes"]//60
     
         # episodes
     episode_threshold = 119
     df_episodes.loc[
         df_episodes["duration_minutes"] > episode_threshold,
         "duration_minutes"
-    ] = df_episodes["duration_minutes"]/60
+    ] = df_episodes["duration_minutes"]//60
     
         # series
-    modifySeriesDuration(df_series, df_episodes)
+    df_series = modifySeriesDuration(df_series, df_episodes)
     
     # Return dataframes
     return df_movies, df_series, df_episodes
@@ -120,30 +149,12 @@ def transformGenres(genres: List[str]):
     res = set()
     
     for g in genres:
-        new_genres = [g] if g in GENRE_TRANSFORMATIONS else GENRE_TRANSFORMATIONS[g]
+        new_genres = GENRE_TRANSFORMATIONS.get(g, [g])
         for gen in new_genres:
             res.add(gen)
             
     return list(res)
 
-
-def createGenreHierarchy(
-    df_movies: pd.DataFrame, 
-    df_series: pd.DataFrame, 
-    df_episodes: pd.DataFrame
-):
-    # Amount of time the genre appears overall
-    genre_count = {}
-    
-    # Count genres on movies
-    for genres in df_movies["genres"]:
-        for g in genres:
-            if g in genre_count:
-                genre_count[g] += 1
-            else:
-                genre_count[g] = 1
-                
-    pass
 
 def addEpisodesToSeries(
     df_series: pd.DataFrame, 
@@ -159,7 +170,7 @@ def countGenreByCategory(
     df_movies: pd.DataFrame,
     df_series: pd.DataFrame
 ) -> dict:
-    # Count genres on movies
+    # Count genres in movies
     genre_movies = {}
     for genres in df_movies["genres"]:
         for g in genres:
@@ -168,7 +179,7 @@ def countGenreByCategory(
             else:
                 genre_movies[g] = 1
                 
-    # Count genres on series (episodes are the same proportion as series, so no need to count them)
+    # Count genres in series (episodes are the same proportion as series, so no need to count them)
     genre_series = {}
     for genres in df_series["genres"]:
         for g in genres:
@@ -183,7 +194,12 @@ def countGenreByCategory(
     }
     
 
-def pdTransform(movies: dict, series: dict, episodes: dict):
+def pdTransform(
+    movies: dict, series: dict, episodes: dict
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+    t1 = time()
+    
+    # (Oh... romnas had no zero...) Convert dictionaries to dataframes
     df_movies = pd.DataFrame(movies)
     df_movies.set_index("id", inplace=True)
     df_series = pd.DataFrame(series)
@@ -209,13 +225,10 @@ def pdTransform(movies: dict, series: dict, episodes: dict):
             inplace=True
         )
         
-    # III) Process Genres
-        # 1) Remove, Combine & Split Genres
-    df_movies["genre"] = df_movies["genre"].apply(transformGenres)
-    df_series["genre"] = df_series["genre"].apply(transformGenres)
-    df_episodes["genre"] = df_episodes["genre"].apply(transformGenres)
-    
-        # 2) Genre Hierarchy
+    # III) Remove, Combine & Split Genres
+    df_movies["genres"] = df_movies["genres"].apply(transformGenres)
+    df_series["genres"] = df_series["genres"].apply(transformGenres)
+    df_episodes["genres"] = df_episodes["genres"].apply(transformGenres)
     
     # IV) Add Episodes to Series
     df_series = addEpisodesToSeries(df_series, df_episodes)
@@ -223,9 +236,14 @@ def pdTransform(movies: dict, series: dict, episodes: dict):
     # V) Count Movies, Series and Episodes in each genre
     genre_count = countGenreByCategory(df_movies, df_series)
     
+    t2 = time()
+    
+    genre_count["pandas_time"] = t2-t1
+    
     return df_movies, df_series, df_episodes, genre_count
 
 
 if __name__ == '__main__':
     movies, series, episodes = main_extract()
-    pdTransform(movies, series, episodes)    
+    df_movies, df_series, df_episodes, genre_count = pdTransform(movies, series, episodes)
+    print(genre_count)

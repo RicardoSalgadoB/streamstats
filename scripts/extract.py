@@ -41,8 +41,7 @@ def extractSeries(series_dict: dict, episodes_dict: dict):
         
         for s in series:
             for key in series_dict.keys():
-                if key != "episodes":
-                    series_dict[key].append(s[key])
+                series_dict[key].append(s[key])
             series_id = s["id"]
             series_episodes: List[dict] = requests.get(
                 BASE_URL+episodes_url, 
@@ -52,12 +51,12 @@ def extractSeries(series_dict: dict, episodes_dict: dict):
                 for key in episodes_dict.keys():
                     if key != "series_id":
                         episodes_dict[key].append(ep[key])
-                ep["series_id"] = series_id
+                episodes_dict["series_id"].append(series_id)
         
         series_params["page"] += 1
         response = requests.get(BASE_URL+series_url, params=series_params)
                 
-    return series_dict
+    return series_dict, episodes_dict
                 
 
 def main_extract():
@@ -94,7 +93,7 @@ def main_extract():
     
     # Extract movies and series from the API
     movies = extractMovies(movies)
-    series = extractSeries(series, episodes)
+    series, episodes = extractSeries(series, episodes)
     
     return movies, series, episodes
     
