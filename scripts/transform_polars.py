@@ -252,7 +252,7 @@ def countGenreByCategory(
 
 def plTransform(
     movies: dict, series: dict, episodes: dict
-) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, dict]:
+) -> tuple[List[dict], List[dict], List[dict], dict]:
     t1 = time()
     
     # Convert dictionaries into dataframes
@@ -280,14 +280,25 @@ def plTransform(
     # V) Count Movies, Series and Episodes in each genre
     genre_count = countGenreByCategory(df_movies, df_series)
     
-    t2 = time()
+    # VI) Rename id to make mongo's life easier
+    df_movies = df_movies.rename({"id":"_id"})
+    df_series = df_series.rename({"id":"_id"})
+    df_episodes = df_episodes.rename({"id":"_id"})
     
+    # VII) Convert dataframes to list of dictionaries
+    movies = df_movies.to_dicts()
+    series = df_series.to_dicts()
+    episodes = df_episodes.to_dicts()
+    
+    t2 = time()
     genre_count["polars_time"] = t2-t1
     
-    return df_movies, df_series, df_episodes, genre_count
+    return movies, series, episodes, genre_count
 
 
 if __name__ == "__main__":
     movies, series, episodes = main_extract()
-    df_movies, df_series, df_episodes, genre_count = plTransform(movies, series, episodes)
+    movies, series, episodes, genre_count = plTransform(movies, series, episodes)
     print(genre_count)
+    print(movies[0])
+    print(series[0])

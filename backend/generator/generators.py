@@ -787,7 +787,7 @@ class EpisodeGenerator(ContentGenerator):
         eps = []
         for t in titles:
             ep = Episode(
-                name = ep_title,
+                name = t,
                 duration = duration+random.randint(-4, 4),
                 season=season
             )

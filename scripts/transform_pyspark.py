@@ -249,7 +249,7 @@ def addEpisodesToSeries(
     )
     episodes_by_series_id = (
         episodes_by_series_id.withColumnRenamed(
-            'collect_list("title")', 
+            "collect_list(title)", 
             "episodes"
         )
     )
@@ -297,7 +297,7 @@ def psTransform(
     movies: dict, 
     series: dict, 
     episodes: dict
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+) -> tuple[List[dict], List[dict], List[dict], dict]:
     # Time PySpark execution
     t1 = time()
     
@@ -359,30 +359,33 @@ def psTransform(
     # F) Count movies, series and episodes in each genre
     genre_count = countGenreByCategory(df_movies, df_series)
     
-    t2 = time()
+    # G) Rename id to make mongo's life easier
+    df_movies = df_movies.withColumnRenamed("id", "_id")
+    df_series = df_series.withColumnRenamed("id", "_id")
+    df_episodes = df_episodes.withColumnRenamed("id", "_id")
     
-    genre_count["pyspark_time"] = t2-t1
-    
-    # Convert series to pandas to be returned
+    # H) Convert series to pandas to be returned
     df_movies_pandas = df_movies.toPandas()
     df_series_pandas = df_series.toPandas()
     df_episodes_pandas = df_episodes.toPandas()
     
-    print(df_movies.show(5))
-    print(df_series.show(5))
-    print(df_episodes.show(5))
-    print(genre_count)
+    # I) Convert dataframes to list of dictionaries
+    movies = df_movies_pandas.to_dict(orient="records")
+    series = df_series_pandas.to_dict(orient="records")
+    episodes = df_episodes_pandas.to_dict(orient="records")
+    
+    t2 = time()
+    genre_count["pyspark_time"] = t2-t1
     
     # Close session
     spark.stop()
     
-    return (
-        df_movies_pandas,
-        df_series_pandas,
-        df_episodes_pandas,
-        genre_count
-    )
+    return movies, series, episodes, genre_count
     
 if __name__  == "__main__":
     movies, series, episodes = main_extract()
-    psTransform(movies, series, episodes)
+    movies, series, episodes, genre_count = psTransform(movies, series, episodes)
+    print(genre_count)
+    print(movies[0])
+    print(series[0])
+    print(episodes[0])

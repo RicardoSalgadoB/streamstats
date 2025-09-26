@@ -1,6 +1,7 @@
 import pandas as pd
 from typing import List
 from time import time
+from bson.objectid import ObjectId
 
 from extract import main_extract
 
@@ -99,7 +100,7 @@ def modifySeriesDuration(df_series: pd.DataFrame, df_episodes: pd.DataFrame):
     series_id_duration = df_episodes.groupby("series_id").agg({"duration_minutes": "sum"})
     df_series = pd.merge(df_series, series_id_duration, left_index=True, right_index=True)
     df_series.drop(columns=["duration_minutes_x"], inplace=True)
-    df_series.rename({"duration_minutes_y":"duration_minutes"}, inplace=True)
+    df_series.rename(columns={"duration_minutes_y":"duration_minutes"}, inplace=True)
     return df_series
     
 
@@ -161,7 +162,7 @@ def addEpisodesToSeries(
     df_episodes: pd.DataFrame
 ) -> pd.DataFrame:
     episodes_by_series_id = df_episodes.groupby("series_id")["title"].agg(list)
-    episodes_by_series_id.rename({"title":"episodes"})
+    episodes_by_series_id = episodes_by_series_id.rename("episodes")
     df_series = pd.merge(df_series, episodes_by_series_id, left_index=True, right_index=True)
     return df_series
 
@@ -196,7 +197,7 @@ def countGenreByCategory(
 
 def pdTransform(
     movies: dict, series: dict, episodes: dict
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+) -> tuple[List[dict], List[dict], List[dict], dict]:
     t1 = time()
     
     # (Oh... romnas had no zero...) Convert dictionaries to dataframes
@@ -236,14 +237,26 @@ def pdTransform(
     # V) Count Movies, Series and Episodes in each genre
     genre_count = countGenreByCategory(df_movies, df_series)
     
-    t2 = time()
+    # VI) Rename id to make mongo's life easier
+    df_movies = df_movies.reset_index().rename(columns={"id":"_id"})
+    df_series = df_series.reset_index().rename(columns={"index":"_id"})
+    df_episodes = df_episodes.reset_index().rename(columns={"id":"_id"})
     
+    # VII) Convert dataframes to list of dictionaries
+    movies = df_movies.to_dict(orient="records")
+    series = df_series.to_dict(orient="records")
+    episodes = df_episodes.to_dict(orient="records")
+    
+    t2 = time()
     genre_count["pandas_time"] = t2-t1
     
-    return df_movies, df_series, df_episodes, genre_count
+    return movies, series, episodes, genre_count
 
 
 if __name__ == '__main__':
     movies, series, episodes = main_extract()
-    df_movies, df_series, df_episodes, genre_count = pdTransform(movies, series, episodes)
+    movies, series, episodes, genre_count = pdTransform(movies, series, episodes)
     print(genre_count)
+    print(movies[0])
+    print(series[0])
+    print(episodes[0])
