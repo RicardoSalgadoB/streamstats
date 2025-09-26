@@ -57,8 +57,8 @@ GENRE_TRANSFORMATIONS = {
 
 def theDealer(df: pl.DataFrame) -> pl.DataFrame:
     title_with_the_exists = pl.when(
-        (pl.col("title").map_elements(lambda t: "The " + t)
-         .is_in(pl.col("title")))
+        (('The ' + pl.col("title"))
+         .is_in(pl.col("title").implode()))
     )
     df = df.with_columns(
         title_with_the_exists
@@ -71,7 +71,7 @@ def theDealer(df: pl.DataFrame) -> pl.DataFrame:
 
 def mergeTranslations(df: pl.DataFrame) -> pl.DataFrame:
     for spanish, english in TRANSLATIONS.items():
-        # Map entries to each english tranlation (could be many movies with the same english name)
+        # Map entries to each english translation (could be many movies with the same english name)
         df = df.with_columns(
             (pl.col("title") == english).cast(pl.Int32)
             .cum_sum()
@@ -172,15 +172,15 @@ def cleanData(
         # movies
     df_movies = df_movies.with_columns(
         pl.when(pl.col("duration_minutes") > 245)
-        .then(pl.col("duration_minutes")//60)
-        .otherwise(pl.col("duration_minutes"))
+          .then(pl.col("duration_minutes")//60)
+          .otherwise(pl.col("duration_minutes"))
     )
     
         # episodes
     df_episodes = df_episodes.with_columns(
         pl.when(pl.col("duration_minutes") > 119)
-        .then(pl.col("duration_minutes")//60)
-        .otherwise(pl.col("duration_minutes"))
+          .then(pl.col("duration_minutes")//60)
+          .otherwise(pl.col("duration_minutes"))
     )
     
         # series
