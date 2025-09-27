@@ -1,8 +1,9 @@
 import os
+import datetime as dt
 from typing import List
 
 from dotenv import load_dotenv
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 
 from transform_pandas import pdTransform
 from transform_polars import plTransform
@@ -49,10 +50,60 @@ def main_load():
     # Get the transformed data
     movies, series, episodes, result = combineFrameworks()
     
-    # Load the data into Mongo
-    movies_coll.insert_many(movies)
-    series_coll.insert_many(series)
-    episodes_coll.insert_many(episodes)
+    # Upsert the data into Mongo
+        # List to store operations
+    movies_operations = []
+    series_operations = []
+    episodes_operations = []
+    
+    # For each movie add an upsert operation with the given id
+    for m in movies:
+        filter_query = {"_id" : m["_id"]}
+        update_op = {'$set' : m}
+        movies_operations.append(
+            UpdateOne(
+                filter_query,
+                update_op,
+                upsert=True,
+            )
+        )
+        
+    # For each series create an upsert operation
+    for s in series:
+        filter_query = {"_id" : s["_id"]}
+        update_op = {'$set' : s}
+        series_operations.append(
+            UpdateOne(
+                filter_query,
+                update_op,
+                upsert=True,
+            )
+        )
+    
+    # For each episode create an upsert operation 
+    for ep in episodes:
+        filter_query = {"_id" : ep["_id"]}
+        update_op = {'$set' : ep}
+        episodes_operations.append(
+            UpdateOne(
+                filter_query,
+                update_op,
+                upsert=True,
+            )
+        )
+    
+    # Execute all save operations
+    if movies_operations:
+        movies_coll.bulk_write(movies_operations)
+        
+    if series_operations:
+        series_coll.bulk_write(series_operations)
+        
+    if episodes_operations:
+        episodes_coll.bulk_write(episodes_operations)
+    
+    # Add the a time entry to the result and save it
+    result["run_at"] = dt.datetime.now(dt.UTC).isoformat()
     results_coll.insert_one(result)
     
     

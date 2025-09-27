@@ -1,10 +1,32 @@
-import sys
+import os
 import requests
-from typing import List
+import datetime as dt
+from typing import List, Optional
+from dotenv import load_dotenv
+
+import pymongo
+from pymongo import MongoClient, UpdateOne
 
 BASE_URL = "http://127.0.0.1:8000"
 
-def extractMovies(movies_dict: dict):
+# Load secrets
+load_dotenv()
+MONGO_CONN = os.environ.get("MONGO_DB_CONN")
+
+
+def getLastRunTime() -> Optional[dt.datetime]:
+    client = MongoClient(MONGO_CONN)
+    streamstats_db = client.StreamStats
+    results_coll = streamstats_db.Results
+    last_result = results_coll.find_one(sort=[("run_at", pymongo.DESCENDING)])
+    
+    if last_result:
+        return dt.datetime.fromisoformat(last_result["run_at"])
+    else:
+        return None
+
+
+def extractMovies(movies_dict: dict, last_updated: Optional[dt.datetime] = None):
     movies_url = "/movies"
 
     params = {
@@ -17,8 +39,10 @@ def extractMovies(movies_dict: dict):
         movies: List[dict] = response.json()
         
         for m in movies:
-            for key in movies_dict.keys():
-                movies_dict[key].append(m[key])
+            if (not last_updated or last_updated 
+                < dt.datetime.fromisoformat(m["last_updated_at"])):
+                for key in movies_dict.keys():
+                    movies_dict[key].append(m[key])
         
         params["page"] += 1
         response = requests.get(BASE_URL+movies_url, params=params)
@@ -26,7 +50,11 @@ def extractMovies(movies_dict: dict):
     return movies_dict
 
 
-def extractSeries(series_dict: dict, episodes_dict: dict):
+def extractSeries(
+    series_dict: dict, 
+    episodes_dict: dict, 
+    last_updated: Optional[dt.datetime] = None
+):
     series_url = "/series"
     episodes_url = "/series/episodes"
     
@@ -40,18 +68,22 @@ def extractSeries(series_dict: dict, episodes_dict: dict):
         series: List[dict] = response.json()
         
         for s in series:
-            for key in series_dict.keys():
-                series_dict[key].append(s[key])
+            if (not last_updated or last_updated 
+                < dt.datetime.fromisoformat(s["last_updated_at"])):
+                for key in series_dict.keys():
+                    series_dict[key].append(s[key])
             series_id = s["id"]
             series_episodes: List[dict] = requests.get(
                 BASE_URL+episodes_url, 
                 params={"ID": series_id}
             ).json()
             for ep in series_episodes:
-                for key in episodes_dict.keys():
-                    if key != "series_id":
-                        episodes_dict[key].append(ep[key])
-                episodes_dict["series_id"].append(series_id)
+                if (not last_updated or last_updated 
+                    < dt.datetime.fromisoformat(ep["last_updated_at"])):
+                    for key in episodes_dict.keys():
+                        if key != "series_id":
+                            episodes_dict[key].append(ep[key])
+                    episodes_dict["series_id"].append(series_id)
         
         series_params["page"] += 1
         response = requests.get(BASE_URL+series_url, params=series_params)
@@ -67,7 +99,8 @@ def main_extract():
         "duration_minutes": [],
         "genres": [],
         "average_rating": [],
-        "reviews": []
+        "reviews": [],
+        "last_updated_at": [],
     }
     
     series = {
@@ -77,7 +110,8 @@ def main_extract():
         "genres": [],
         "average_rating": [],
         "reviews": [],
-        "number_of_episodes": []
+        "number_of_episodes": [],
+        "last_updated_at": [],
     }
     
     episodes = {
@@ -88,15 +122,21 @@ def main_extract():
         "duration_minutes": [],
         "genres": [],
         "average_rating": [],
-        "reviews": []
+        "reviews": [],
+        "last_updated_at": []
     }
     
+    # Get last update time
+    last_run_time = getLastRunTime()
+    
     # Extract movies and series from the API
-    movies = extractMovies(movies)
-    series, episodes = extractSeries(series, episodes)
+    movies = extractMovies(movies, last_run_time)
+    series, episodes = extractSeries(series, episodes, last_run_time)
     
     return movies, series, episodes
     
     
 if __name__ == "__main__":
-    main_extract()
+    movies, series, episodes = main_extract()
+    print(movies["title"][0:4])
+    print(movies["last_updated_at"][0:4])

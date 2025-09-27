@@ -650,6 +650,7 @@ def rate_content(
             content = session.scalar(stmt)
             if content:
                 content.ratings.append(rating)
+                content.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"Content '{name}' not found.")
@@ -670,6 +671,7 @@ def rate_content(
             content = session.scalar(stmt)
             if content:
                 content.ratings.append(rating)
+                content.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"ID {ID} not found.")
@@ -719,6 +721,7 @@ def rate_movie(
             movie = session.scalar(stmt)
             if movie:
                 movie.ratings.append(rating)
+                movie.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"Movie '{name}' not found.")
@@ -739,6 +742,7 @@ def rate_movie(
             movie = session.scalar(stmt)
             if movie:
                 movie.ratings.append(rating)
+                movie.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a movie.")
@@ -788,6 +792,7 @@ def rate_series(
             series = session.scalar(stmt)
             if series:
                 series.ratings.append(rating)
+                series.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"Series '{name}' not found.")
@@ -808,6 +813,7 @@ def rate_series(
             series = session.scalar(stmt)
             if series:
                 series.ratings.append(rating)
+                series.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a series.")
@@ -862,17 +868,20 @@ def rate_episode(
                 if series_name:
                     if ep.series.name == series_name:
                         ep.ratings.append(rating)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in '{series_name}'.")
                 elif series_id:
                     if ep.series_id == series_id:
                         ep.ratings.append(rating)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series wiht ID {series_id}.")
                 else:
                     ep.ratings.append(rating)
+                    ep.updated_at = sa.func.now()
                     session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"Episode '{name}' not found.")
@@ -895,17 +904,20 @@ def rate_episode(
                 if series_name:
                     if ep.series.name == series_name:
                         ep.ratings.append(rating)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode of {ID} not found in '{series_name}'.")
                 elif series_id:
                     if ep.series_id == series_id:
                         ep.ratings.append(rating)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode of {ID} nto found in series with ID {series_id}.")
                 else:
                     ep.ratings.append(rating)
+                    ep.updated_at = sa.func.now()
                     session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with an episode.")
@@ -1309,6 +1321,7 @@ def update_movie(
                 # Iterate through the payload updating the reguired values
                 for key, value in update_data.items():
                     setattr(m, key, value)
+                m.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"Movie '{name}' not found")
@@ -1326,6 +1339,7 @@ def update_movie(
                 # Iterate through the payload updating the reguired values
                 for key, value in update_data.items():
                     setattr(m, key, value)
+                m.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a movie.")
@@ -1364,6 +1378,7 @@ def update_series(
                 # Iterate through the payload updating the reguired values
                 for key, value in update_data.items():
                     setattr(s, key, value)
+                s.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"Series '{name}' not found")
@@ -1381,6 +1396,7 @@ def update_series(
                 # Iterate through the payload updating the reguired values
                 for key, value in update_data.items():
                     setattr(s, key, value)
+                s.updated_at = sa.func.now()
                 session.commit()
             else:
                 raise HTTPException(status_code=404, detail=f"ID {ID} not found or associated with a series.")
@@ -1430,6 +1446,7 @@ def update_episode(
                         # iterate through the dict updating where necessary
                         for key, value in update_data.items():
                             setattr(ep, key, value)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series '{series_name}'")
@@ -1440,6 +1457,7 @@ def update_episode(
                         # iterate through the dict updating where necessary
                         for key, value in update_data.items():
                             setattr(ep, key, value)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode '{name}' not found in series with ID {series_id}")
@@ -1462,6 +1480,7 @@ def update_episode(
                         # iterate through the dict updating where necessary
                         for key, value in update_data.items():
                             setattr(ep, key, value)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode with ID {ID} not found in series '{series_name}'")
@@ -1472,6 +1491,7 @@ def update_episode(
                         # iterate through the dict updating where necessary
                         for key, value in update_data.items():
                             setattr(ep, key, value)
+                        ep.updated_at = sa.func.now()
                         session.commit()
                     else:
                         raise HTTPException(status_code=404, detail=f"Episode with ID {ID} not found in series with ID {series_id}")

@@ -1,5 +1,5 @@
 import polars as pl
-from typing import List
+from typing import List, Optional
 from extract import main_extract
 from time import time
 
@@ -82,7 +82,7 @@ def mergeTranslations(df: pl.DataFrame) -> pl.DataFrame:
         reviews_by_group = (
             df.filter((pl.col("title") == spanish).or_(pl.col("title") == english))
               .group_by("english_title_group")
-              .agg(pl.concat_list("reviews"))
+              .agg(pl.col("reviews").explode())
         )
         ratings_by_group = (
             df.filter(
@@ -151,12 +151,17 @@ def modifySeriesDuration(
 def cleanData(
     df_movies: pl.DataFrame,
     df_series: pl.DataFrame,
-    df_episodes: pl.DataFrame
+    df_episodes: pl.DataFrame,
 ) -> tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame]:    
     # 1) Remove trailing and leading blankspaces
-    df_movies.with_columns(pl.col("title").str.strip_chars(' ').alias("title"))
-    df_series.with_columns(pl.col("title").str.strip_chars(' ').alias("title"))
-    df_episodes.with_columns(pl.col("title").str.strip_chars(' ').alias("title"))
+    if not df_movies.is_empty():
+        df_movies.with_columns(pl.col("title").str.strip_chars(' ').alias("title"))
+        
+    if not df_series.is_empty():
+        df_series.with_columns(pl.col("title").str.strip_chars(' ').alias("title"))
+        
+    if not df_episodes.is_empty():
+        df_episodes.with_columns(pl.col("title").str.strip_chars(' ').alias("title"))
     
     # 2) Deal with the "The"
     df_movies = theDealer(df_movies)
@@ -265,9 +270,14 @@ def plTransform(
     
     # II) Remove Non-Fiction Genres
     for g in NON_FICTION_GENRES:
-        df_movies = df_movies.filter(~(pl.col("genres").list.contains(g)))
-        df_series = df_series.filter(~(pl.col("genres").list.contains(g)))
-        df_episodes = df_episodes.filter(~(pl.col("genres").list.contains(g)))
+        if not df_movies.is_empty():
+            df_movies = df_movies.filter(~(pl.col("genres").list.contains(g)))
+            
+        if not df_series.is_empty():
+            df_series = df_series.filter(~(pl.col("genres").list.contains(g)))
+        
+        if not df_episodes.is_empty():
+            df_episodes = df_episodes.filter(~(pl.col("genres").list.contains(g)))
         
     # III) Remove, Combine & Split Genres
     df_movies = transformGenres(df_movies)

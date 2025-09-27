@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 
+import datetime as dt
 from typing import List, Optional
 from dotenv import load_dotenv
 
@@ -94,7 +95,7 @@ class Rating(Base):
             "id": self.id,
             "score": self.score,
             "review": self.review,
-            "content": self.content.name
+            "content": self.content.name,
         }
 
 
@@ -105,6 +106,12 @@ class Content(Base):
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
     name: orm.Mapped[str] = orm.mapped_column(nullable=False)
     type: orm.Mapped[str] = orm.mapped_column(nullable=False)
+    updated_at: orm.Mapped[dt.datetime] = orm.mapped_column(
+        sa.DateTime(timezone=True), 
+        server_default = sa.func.now(),
+        onupdate = sa.func.now(),
+        nullable = False,
+    )
     
     # Mapper to allow for inheritance
     __mapper_args__ = {
@@ -135,7 +142,7 @@ class Content(Base):
         )
         
     def to_dict(self) -> dict:
-        reviews = [str(rating.review) for rating in self.ratings]
+        reviews = [str(rating.review) for rating in self.ratings if rating.review != None]
         return {
             "id": self.id,
             "title": self.name,
@@ -143,6 +150,7 @@ class Content(Base):
             "genres": [str(genre.name) for genre in self.genres],
             "average_rating": self.average,
             "reviews": reviews,
+            "last_updated_at": self.updated_at,
         }
         
     @property

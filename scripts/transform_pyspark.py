@@ -12,6 +12,7 @@ from pyspark.sql.types import (
     StringType,
     ArrayType,
     IntegerType,
+    FloatType,
 )
 
 from extract import main_extract
@@ -306,27 +307,32 @@ def psTransform(
     
     # A) Get DataFrames
     df_movies_pandas = pd.DataFrame(movies)
+    df_movies_pandas["average_rating"] = df_movies_pandas["average_rating"].astype(float)
     movie_schema = StructType([
         StructField("id", IntegerType(), True),
         StructField("title", StringType(), True),
         StructField("duration_minutes", IntegerType(), True),
         StructField("genres", ArrayType(StringType()), True),
-        StructField("average_rating", IntegerType(), True),
+        StructField("average_rating", FloatType(), True),
         StructField("reviews", ArrayType(StringType()), True),
+        StructField("last_updated_at", StringType(), True),
     ])
     df_movies = spark.createDataFrame(df_movies_pandas, schema=movie_schema)
     df_series_pandas = pd.DataFrame(series)
+    df_series_pandas["average_rating"] = df_series_pandas["average_rating"].astype(float)
     series_schema = StructType([
         StructField("id", IntegerType(), True),
         StructField("title", StringType(), True),
         StructField("duration_minutes", IntegerType(), True),
         StructField("genres", ArrayType(StringType()), True),
-        StructField("average_rating", IntegerType(), True),
+        StructField("average_rating", FloatType(), True),
         StructField("reviews", ArrayType(StringType()), True),
         StructField("number_of_episodes", IntegerType(), True),
+        StructField("last_updated_at", StringType(), True),
     ])
     df_series = spark.createDataFrame(df_series_pandas, schema=series_schema)
     df_episodes_pandas = pd.DataFrame(episodes)
+    df_episodes_pandas["average_rating"] = df_episodes_pandas["average_rating"].astype(float)
     episodes_schema = StructType([
         StructField("id", IntegerType(), True),
         StructField("series_id", IntegerType(), True),
@@ -334,8 +340,9 @@ def psTransform(
         StructField("season", IntegerType(), True),
         StructField("duration_minutes", IntegerType(), True),
         StructField("genres", ArrayType(StringType()), True),
-        StructField("average_rating", IntegerType(), True),
+        StructField("average_rating", FloatType(), True),
         StructField("reviews", ArrayType(StringType()), True),
+        StructField("last_updated_at", StringType(), True),
     ])
     df_episodes = spark.createDataFrame(df_episodes_pandas, schema=episodes_schema)
     
@@ -364,15 +371,24 @@ def psTransform(
     df_series = df_series.withColumnRenamed("id", "_id")
     df_episodes = df_episodes.withColumnRenamed("id", "_id")
     
-    # H) Convert series to pandas to be returned
-    df_movies_pandas = df_movies.toPandas()
-    df_series_pandas = df_series.toPandas()
-    df_episodes_pandas = df_episodes.toPandas()
-    
-    # I) Convert dataframes to list of dictionaries
-    movies = df_movies_pandas.to_dict(orient="records")
-    series = df_series_pandas.to_dict(orient="records")
-    episodes = df_episodes_pandas.to_dict(orient="records")
+    # H) Convert series to pandas and to dictionaries to be returned
+    if df_movies.count() > 0:
+        df_movies_pandas = df_movies.toPandas()
+        movies = df_movies_pandas.to_dict(orient="records")
+    else:
+        movies = []
+        
+    if df_series.count() > 0:
+        df_series_pandas = df_series.toPandas()
+        series = df_series_pandas.to_dict(orient="records")
+    else:
+        series = []
+        
+    if df_episodes.count() > 0:
+        df_episodes_pandas = df_episodes.toPandas()
+        episodes = df_episodes_pandas.to_dict(orient="records")
+    else:
+        episodes = []
     
     t2 = time()
     genre_count["pyspark_time"] = t2-t1
