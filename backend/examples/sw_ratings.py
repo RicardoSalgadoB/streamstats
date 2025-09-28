@@ -4,9 +4,10 @@ import requests
 
 
 def movie_example():
-    url = "http://127.0.0.1:8000/movies/Solo: A Star Wars Story/rate"
+    url = "http://127.0.0.1:8000/movies/rate?name=Comedy Gold"
     payload = {
-        "score": 3,
+        "score": 4,
+        "review": "Cool",
     }
     
     response = requests.post(url, json=payload)
@@ -16,7 +17,7 @@ def movie_example():
     
     
 def series_example():
-    url = "http://127.0.0.1:8000/series/The Bad Batch/rate"
+    url = "http://127.0.0.1:8000/series/rate?name=The Funny Side of Early years teacher"
     payload = {
         "score": 2,
         "review": "A children's show"
@@ -29,7 +30,7 @@ def series_example():
     
     
 def episode_example():
-    url = "http://127.0.0.1:8000/series/&%7C/episodes/Kassa/rate"
+    url = "http://127.0.0.1:8000/series/episodes/rate?series_ID=23&name=Cow Tales"
     payload = {
         "score": 4
     }
@@ -41,6 +42,6 @@ def episode_example():
     
     
 if __name__ == "__main__":
-    movie_example()
-    series_example()
+    #movie_example()
+    #series_example()
     episode_example()

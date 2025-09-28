@@ -307,6 +307,17 @@ def psTransform(
     
     # A) Get DataFrames
     df_movies_pandas = pd.DataFrame(movies)
+        # reorder them to ensure consistency
+    movie_order = [
+        "id",
+        "title",
+        "duration_minutes",
+        "genres",
+        "average_rating",
+        "reviews",
+        "last_updated_at",
+    ]
+    df_movies_pandas = df_movies_pandas[movie_order]
     df_movies_pandas["average_rating"] = df_movies_pandas["average_rating"].astype(float)
     movie_schema = StructType([
         StructField("id", IntegerType(), True),
@@ -318,7 +329,20 @@ def psTransform(
         StructField("last_updated_at", StringType(), True),
     ])
     df_movies = spark.createDataFrame(df_movies_pandas, schema=movie_schema)
+    
     df_series_pandas = pd.DataFrame(series)
+        # reorder them to ensure consistency
+    series_order = [
+        "id",
+        "title",
+        "duration_minutes",
+        "genres",
+        "average_rating",
+        "reviews",
+        "number_of_episodes",
+        "last_updated_at",
+    ]
+    df_series_pandas = df_series_pandas[series_order]
     df_series_pandas["average_rating"] = df_series_pandas["average_rating"].astype(float)
     series_schema = StructType([
         StructField("id", IntegerType(), True),
@@ -332,6 +356,19 @@ def psTransform(
     ])
     df_series = spark.createDataFrame(df_series_pandas, schema=series_schema)
     df_episodes_pandas = pd.DataFrame(episodes)
+        # reorder them to ensure consistency
+    episodes_order = [
+        "id",
+        "series_id",
+        "title",
+        "season",
+        "duration_minutes",
+        "genres",
+        "average_rating",
+        "reviews",
+        "last_updated_at",
+    ]
+    df_episodes_pandas = df_episodes_pandas[episodes_order]
     df_episodes_pandas["average_rating"] = df_episodes_pandas["average_rating"].astype(float)
     episodes_schema = StructType([
         StructField("id", IntegerType(), True),
@@ -394,7 +431,7 @@ def psTransform(
     genre_count["pyspark_time"] = t2-t1
     
     # Close session
-    spark.stop()
+    spark.stop()   # No need to close the session when usign docker
     
     return movies, series, episodes, genre_count
     

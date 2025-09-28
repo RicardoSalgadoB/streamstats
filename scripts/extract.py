@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import pymongo
 from pymongo import MongoClient, UpdateOne
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = "http://host.docker.internal:8000"
 
 # Load secrets
 load_dotenv()
@@ -39,7 +39,7 @@ def extractMovies(movies_dict: dict, last_updated: Optional[dt.datetime] = None)
         movies: List[dict] = response.json()
         
         for m in movies:
-            if (not last_updated or last_updated 
+            if (not last_updated or last_updated.replace(tzinfo=None) 
                 < dt.datetime.fromisoformat(m["last_updated_at"])):
                 for key in movies_dict.keys():
                     movies_dict[key].append(m[key])
@@ -68,7 +68,7 @@ def extractSeries(
         series: List[dict] = response.json()
         
         for s in series:
-            if (not last_updated or last_updated 
+            if (not last_updated or last_updated.replace(tzinfo=None)
                 < dt.datetime.fromisoformat(s["last_updated_at"])):
                 for key in series_dict.keys():
                     series_dict[key].append(s[key])
@@ -78,7 +78,7 @@ def extractSeries(
                 params={"ID": series_id}
             ).json()
             for ep in series_episodes:
-                if (not last_updated or last_updated 
+                if (not last_updated or last_updated.replace(tzinfo=None) 
                     < dt.datetime.fromisoformat(ep["last_updated_at"])):
                     for key in episodes_dict.keys():
                         if key != "series_id":

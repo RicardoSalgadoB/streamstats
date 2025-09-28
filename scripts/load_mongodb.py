@@ -14,31 +14,47 @@ from extract import main_extract
 load_dotenv()
 MONGO_CONN = os.environ.get("MONGO_DB_CONN")
 
-def combineFrameworks() -> tuple[List[dict], List[dict], List[dict], dict]:
-    movies, series, episodes = main_extract()
-    movies_pd, series_pd, episodes_pd, result_pd = pdTransform(movies, series, episodes)
-    movies_pl, series_pl, episodes_pl, result_pl = plTransform(movies, series, episodes)
-    movies_ps, series_ps, episodes_ps, result_ps = psTransform(movies, series, episodes)
+def combineFrameworks(
+    movies_pd, series_pd, episodes_pd, result_pd,
+    movies_pl, series_pl, episodes_pl, result_pl,
+    movies_ps, series_ps, episodes_ps, result_ps
+) -> tuple[List[dict], List[dict], List[dict], dict]:
+    if not result_pl and not result_ps:
+        return movies_pd, series_pd, episodes_pd, result_pd
+    elif not result_pd and not result_ps:
+        return movies_pl, series_pl, episodes_pl, result_pl
+    elif not result_pd and not result_pl:
+        return movies_ps, series_ps, episodes_ps, result_ps
+    
     
     if (result_pd["pandas_time"] < result_pl["polars_time"]
         and result_pd["pandas_time"] < result_ps["pyspark_time"]):
         print("Pandas")
-        result_pd["polars_time"] = result_pl["polars_time"]
-        result_pd["pyspark_time"] = result_ps["pyspark_time"]
+        if result_pl:
+            result_pd["polars_time"] = result_pl["polars_time"]
+        if result_ps:
+            result_pd["pyspark_time"] = result_ps["pyspark_time"]
         return movies_pd, series_pd, episodes_pd, result_pd
+    
     elif (result_pl["polars_time"] < result_pd["pandas_time"]
         and result_pl["polars_time"] < result_ps["pyspark_time"]):
         print("Polars")
-        result_pl["pandas_time"] = result_pd["pandas_time"]
-        result_pl["pyspark_time"] = result_ps["pyspark_time"]
+        if result_pd:
+            result_pl["pandas_time"] = result_pd["pandas_time"]
+        if result_ps:
+            result_pl["pyspark_time"] = result_ps["pyspark_time"]
         return movies_pl, series_pl, episodes_pl, result_pl
+    
     else:
         print("PySpark")
-        result_ps["pandas_time"] = result_pd["pandas_time"]
-        result_ps["polars_time"] = result_pl["polars_time"]
+        if result_pd:
+            result_ps["pandas_time"] = result_pd["pandas_time"]
+        if result_pl:
+            result_ps["polars_time"] = result_pl["polars_time"]
         return movies_ps, series_ps, episodes_ps, result_ps
 
-def main_load():
+
+def main_load(movies, series, episodes, result) -> None:
     # Get each collection
     client = MongoClient(MONGO_CONN)
     streamstats_db = client.StreamStats
@@ -48,7 +64,7 @@ def main_load():
     results_coll = streamstats_db.Results
 
     # Get the transformed data
-    movies, series, episodes, result = combineFrameworks()
+    #movies, series, episodes, result = combineFrameworks()
     
     # Upsert the data into Mongo
         # List to store operations
@@ -108,4 +124,13 @@ def main_load():
     
     
 if __name__ == "__main__":
-    main_load()
+    movies, series, episodes = main_extract()
+    movies_pd, series_pd, episodes_pd, result_pd = pdTransform(movies, series, episodes)
+    movies_pl, series_pl, episodes_pl, result_pl = plTransform(movies, series, episodes)
+    movies_ps, series_ps, episodes_ps, result_ps = psTransform(movies, series, episodes)
+    movies, series, episodes, results = combineFrameworks(
+        movies_pd, series_pd, episodes_pd, result_pd,
+        movies_pl, series_pl, episodes_pl, result_pl,
+        movies_ps, series_ps, episodes_ps, result_ps
+    )
+    main_load(movies, series, episodes, results)

@@ -239,7 +239,7 @@ def pdTransform(
     
     # VI) Rename id to make mongo's life easier
     df_movies = df_movies.reset_index().rename(columns={"id":"_id"})
-    df_series = df_series.reset_index().rename(columns={"id":"_id"})
+    df_series = df_series.reset_index().rename(columns={"index":"_id"})
     df_episodes = df_episodes.reset_index().rename(columns={"id":"_id"})
     
     # VII) Convert dataframes to list of dictionaries
