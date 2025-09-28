@@ -17,7 +17,8 @@ from scripts.load_mongodb import main_load, combineFrameworks
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': dt.datetime(2024, 1, 1),
+    'start_date': dt.datetime(2025, 9, 28, 18, 40),
+    'end_date': dt.datetime(2025, 9, 29),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -28,7 +29,7 @@ default_args = {
     dag_id='streamstats_pipeline_pyspark',
     default_args=default_args,
     description='ETL pipeline for movie data using multiple frameworks',
-    schedule='@daily',
+    schedule='@hourly',
     catchup=False,
     tags=['etl', 'streamstats', 'mongodb'],
 )
