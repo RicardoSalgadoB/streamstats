@@ -51,8 +51,9 @@ Since the semester ended, I've not had the chance to work on this project, but u
 
 1. Clone this repo
 ```bash
-git clone [https://github/RicardoSalgadoB/streamstats.git](https://github/RicardoSalgadoB/streamstats.git)
-cd streamstats
+git clone [https://github/RicardoSalgadoB/Streamstats-ETL/backend.git](https://github/RicardoSalgadoB/Streamstats-ETL/backend.git)
+mv ./backend ./backend-streamstats
+cd backend
 ```
 
 2. Create and activate a virtual environment
