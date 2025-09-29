@@ -56,7 +56,7 @@ When the data was smaller *Pandas* achieved roughly x20 faster performance than 
 
 #### Polars
 
-I ended up liking a lot the way *Polars* works, from its syntax to its scalability. It certainly a good alternative to *Pandas* especially when the data is not that big as is with this case. The hardest part was ensuring the schema of the data was correct, which is a problem that only appeared when running in Docker. The performance of the framework was around 2 seconds when all the data was needed to be inserted to **Mongo** and right around 300 ms when updating content.
+I ended up liking a lot the way *Polars* works, from its syntax to its scalability. It certainly a good alternative to *Pandas* especially when the data is not that big as is with this case. The hardest part was ensuring the schema of the data was correct, which is a problem that only appeared when running in Docker. The performance of the framework was around 2 seconds when all the data was needed to be inserted to **Mongo** and right around 200 ms when updating content.
 
 #### Spark
 
