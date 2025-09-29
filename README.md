@@ -79,13 +79,13 @@ Running the project is relatively easy, just do the following (well, if you are 
 1. Clone the repo
 
 ```bash
-git clone [https://github/RicardoSalgadoB/Streamstats-ETL.git](https://github/RicardoSalgadoB/Streamtats-etl.git)
+git clone [https://github/RicardoSalgadoB/streamstats.git](https://github/RicardoSalgadoB/streamtats.git)
 cd streamstats
 ```
 
 2. Go to the `airflow/dags` and change the strating time of each dag (well just *PySpark* and *Polars*, *Pandas* doesn't work) to whatever you want
 
-3. Make an `.env` file and add a variable called *MONGO_CONN* to connect with **MONGO DB**, as well as the follwing variables to connect the backend database:
+3. Make an `.env` file and add a variable called *MONGO_DB_CONN* to connect with **MONGO DB**, as well as the follwing variables to connect the backend database:
 
 ```
 DB_URL="postgresql+psycopg2://<user>:<password>@backend-db:5432/streamstats"
