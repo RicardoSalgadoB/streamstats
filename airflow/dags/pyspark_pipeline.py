@@ -18,7 +18,7 @@ default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'start_date': dt.datetime(2025, 9, 29, 2),
-    'end_date': dt.datetime(2025, 9, 29, 4),
+    'end_date': dt.datetime(2025, 9, 29, 5),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
