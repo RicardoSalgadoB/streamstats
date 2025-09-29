@@ -17,8 +17,8 @@ from scripts.load_mongodb import main_load, combineFrameworks
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': dt.datetime(2025, 9, 28, 18, 40),
-    'end_date': dt.datetime(2025, 9, 29),
+    'start_date': dt.datetime(2025, 9, 29, 2),
+    'end_date': dt.datetime(2025, 9, 29, 4),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -29,13 +29,13 @@ default_args = {
     dag_id='streamstats_pipeline_pyspark',
     default_args=default_args,
     description='ETL pipeline for movie data using multiple frameworks',
-    schedule='@hourly',
+    schedule='0 * * * *',
     catchup=False,
-    tags=['etl', 'streamstats', 'mongodb'],
+    tags=['etl', 'streamstats', 'mongodb', 'pyspark'],
 )
-def movie_etl_pipeline():
+def streamstats_pipeline():
     """
-    Main DAG function that defines the movie ETL pipeline.
+    Main DAG function that defines the streamstats ETL pipeline.
     Processes movie, series, and episodes data using pandas, polars, and pyspark.
     """
     
@@ -100,5 +100,5 @@ def movie_etl_pipeline():
     load_result = load_mongo(pyspark_transformed)
 
 # Instantiate the DAG
-movie_etl_dag = movie_etl_pipeline()
+movie_etl_dag = streamstats_pipeline()
     

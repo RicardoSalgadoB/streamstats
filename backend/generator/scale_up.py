@@ -39,7 +39,7 @@ def add_new_series(generator: ApiSeriesGenerator):
 
 
 def rate_content():
-    _id = random.randint(1, 900000)
+    _id = random.randint(1, 100000)
     url_rate = f"http://host.docker.internal:8000/content/rate?ID={_id}"
     score = random.randint(1, 5)
     review = random.choice(reviews_by_score[score])
@@ -55,9 +55,9 @@ def rate_content():
 def main():
     movie_gen = ApiMovieGenerator()
     series_gen = ApiSeriesGenerator()
-    schedule.every(60).seconds.do(add_new_movie, movie_gen)
-    schedule.every(60).seconds.do(add_new_series, series_gen)
-    schedule.every(5).seconds.do(rate_content)
+    schedule.every(120).seconds.do(add_new_movie, movie_gen)
+    schedule.every(120).seconds.do(add_new_series, series_gen)
+    schedule.every(10).seconds.do(rate_content)
     
     while True:
         schedule.run_pending()

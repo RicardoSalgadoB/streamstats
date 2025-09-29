@@ -26,12 +26,13 @@ if [[ -z "$TABLE_COUNT" ]]; then
   echo "Error: Could not connect to the database or query for tables. Proceding anyway"
 # If there are no tables, then use alembic to get teh schemas and example.fake_content to create fake content
 elif (( TABLE_COUNT == 0 )); then
-  echo "Database '${DB_NAME}' is empty. Running data initialization"
+  echo "Database '${POSTGRES_DB}' is empty. Running data initialization"
   alembic upgrade head
+  echo "'${POSTGRES_DB}' has been migrated"
   python -m generator.init_content_db
 # If it already has information don't do anything
 else
-  echo "Database '${DB_NAME}' already has ${TABLE_COUNT} relations. Skipping initialization."
+  echo "Database '${DB_NAME}' already has ${POSTGRES_DB} relations. Skipping initialization."
 fi
 
 # Return to the execution of the command in the Dockerfile

@@ -107,9 +107,9 @@ if __name__ == '__main__':
     print("Generating genres...")
     genres = generate_genres()
     print("Generating movies...")
-    movies = generate_movies(genres, 100000)
+    movies = generate_movies(genres, 10000)
     print("Generating series...")
-    series = generate_series(genres, 50000)
+    series = generate_series(genres, 5000)
     
     # Commit the objects to the database
     print("Adding content to the database...")

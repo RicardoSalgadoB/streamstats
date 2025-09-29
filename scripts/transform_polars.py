@@ -261,9 +261,39 @@ def plTransform(
     t1 = time()
     
     # Convert dictionaries into dataframes
-    df_movies = pl.DataFrame(movies)
-    df_series = pl.DataFrame(series)
-    df_episodes = pl.DataFrame(episodes)
+    movie_schema = {
+        "id": pl.Int32,
+        "title": pl.String,
+        "duration_minutes": pl.Int32,
+        "genres": pl.List(pl.String),
+        "average_rating": pl.Float32,
+        "reviews": pl.List(pl.String),
+        "last_updated_at": pl.String,
+    }
+    df_movies = pl.DataFrame(movies, schema=movie_schema)
+    series_schema = {
+        "id": pl.Int32,
+        "title": pl.String,
+        "duration_minutes": pl.Int32,
+        "genres": pl.List(pl.String),
+        "average_rating": pl.Float32,
+        "reviews": pl.List(pl.String),
+        "number_of_episodes": pl.Int32,
+        "last_updated_at": pl.String,
+    }
+    df_series = pl.DataFrame(series, schema=series_schema)
+    episode_schema = {
+        "id": pl.Int32,
+        "series_id": pl.Int32,
+        "title": pl.String,
+        "season": pl.Int32,
+        "duration_minutes": pl.Int32,
+        "genres": pl.List(pl.String),
+        "average_rating": pl.Float32,
+        "reviews": pl.List(pl.String),
+        "last_updated_at": pl.String,
+    }
+    df_episodes = pl.DataFrame(episodes, schema=episode_schema)
     
     # I) Clean Data
     df_movies, df_series, df_episodes = cleanData(df_movies, df_series, df_episodes)
