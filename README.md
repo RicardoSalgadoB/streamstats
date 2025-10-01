@@ -4,7 +4,7 @@ An ETL pipeline built from API requests with the help of Python, Pandas, Polars,
 
 ## Summary
 
-A **Python ETL Pipeline** that extracts 100K records from an **RESTful API** (a fake streaming catalog that I built). This data is then transformed using three frameworks: **Pandas**, **Polars** and **Apache Spark**. The time performance of these frameworks is stored for future benchmarking. The transformed data is then loaded into **Mongo DB Atlas**. The complete pipeline is run inside various **Docker Containers** orchestrated with **Docker Compose**.
+A **Python ETL Pipeline** that extracts 100K records from an **RESTful API** (a fake streaming catalog that I built). This data is then transformed using three frameworks: **Pandas**, **Polars** and **Apache Spark**. The time performance of these frameworks is stored for future benchmarking. The transformed data is then loaded into **Mongo DB Atlas**, where it is then aggregated into a [dashboard](https://charts.mongodb.com/charts-project-0-gsrmzfv/public/dashboards/68dc91b3-ed26-474a-8ad6-518636b9eca1). The complete pipeline is run inside various **Docker Containers** orchestrated with **Docker Compose**.
 
 My goal was to show my ability to work with some of the most common data engineering tools and show that I can integrating succesfully to efficiently performa various tasks.
 
@@ -124,7 +124,7 @@ docker-compose down -v
 
 ## Future
 
-* **More performance tests**: Besides only time, I would like to mesasure *peak memory usage* for each framework. Also, I would like to show this performance benchmarks in some sort of dashboard (**Tableau** or **Power BI**), this is relatively easy, so proabably I am going to do so in the next week or so (hopefully).
+* ~~**More performance tests**: Besides only time, I would like to mesasure *peak memory usage* for each framework. Also, I would like to show this performance benchmarks in some sort of dashboard (**Tableau** or **Power BI**), this is relatively easy, so proabably I am going to do so in the next week or so (hopefully).~~
 
 ## Contact
 
